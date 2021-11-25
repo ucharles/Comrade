@@ -1,3 +1,4 @@
+import { AuthDocument } from './../../dist/auth/interfaces/auth.interface.d';
 import {
   HttpException,
   Injectable,
@@ -10,7 +11,7 @@ import { AuthDocument } from './interfaces/auth.interface';
 
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
-import { from, Observable, of } from 'rxjs';
+import { from, map, Observable, of } from 'rxjs';
 
 @Injectable()
 export class AuthService {

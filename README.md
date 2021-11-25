@@ -28,3 +28,5 @@ MongooseModule.forFeature([
 4th param - [skipInit] <Boolean> whether to skip initialization (defaults to false)
 
 ### 삽질1
+
+추상화와 동기-비동기 처리
