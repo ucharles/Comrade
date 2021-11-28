@@ -1,4 +1,3 @@
-import { AuthDocument } from './../../dist/auth/interfaces/auth.interface.d';
 import {
   HttpException,
   Injectable,

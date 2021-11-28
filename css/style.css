@@ -1,0 +1,101 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+header h1 {
+  color: blue;
+  font-size: 26px;
+  font-family: sans-serif;
+  background-color: rgb(118, 212, 212);
+  border: 2px solid rgb(24, 24, 143);
+  border-radius: 5px;
+  padding: 20px;
+  position: relative;
+}
+h1::after {
+  content: "BETA!";
+  background-color: yellow;
+  font-size: 16px;
+  font-weight: bold;
+  display: inline-block;
+  padding: 5px 10px;
+  position: absolute;
+  top: 10px;
+  right: -20px;
+}
+
+main {
+  display: flex;
+  justify-content: center;
+  height: 700px;
+}
+
+li {
+  color: blue;
+  margin-bottom: 10px;
+}
+
+nav {
+  padding: 20px;
+  border: 2px solid black;
+  width: 25%;
+  max-width: 300px;
+}
+
+nav li {
+  padding: 20px;
+}
+aside {
+  padding: 20px;
+  border: 2px solid black;
+  width: 25%;
+  display: inline-block;
+}
+
+.container {
+  width: 90%;
+  margin: 0 auto;
+  background-color: bisque;
+}
+
+button {
+  padding: 10px;
+  position: absolute;
+  bottom: 50px;
+  right: 50px;
+}
+
+h1::first-letter {
+  font-size: 30px;
+  position: relative;
+}
+li::first-line {
+  color: brown;
+}
+article {
+  border: 1px solid red;
+  flex: 1;
+  min-width: 500px;
+}
+/* 
+h3 + p ::first-line {
+} */
+
+table {
+  flex: 1;
+  width: 100%;
+  height: 90%;
+}
+
+article p {
+  height: 10%;
+  border: 1px solid blue;
+}
+
+tr,
+td {
+  border: 1px solid black;
+  width: 50px;
+  height: 50px;
+}
