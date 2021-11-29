@@ -3,14 +3,23 @@
   padding: 0;
 }
 
-header h1 {
+html,
+body {
+  font-family: "Open Sans", sans-serif;
+  width: 100%;
+  height: 100%;
+}
+
+#header {
+  height: 60px;
+  background-color: rgb(118, 212, 212);
+}
+
+#header h1 {
   color: blue;
   font-size: 26px;
   font-family: sans-serif;
-  background-color: rgb(118, 212, 212);
-  border: 2px solid rgb(24, 24, 143);
   border-radius: 5px;
-  padding: 20px;
   position: relative;
 }
 h1::after {
@@ -18,29 +27,46 @@ h1::after {
   background-color: yellow;
   font-size: 16px;
   font-weight: bold;
-  display: inline-block;
   padding: 5px 10px;
   position: absolute;
   top: 10px;
-  right: -20px;
+  right: 10px;
 }
 
-main {
-  display: flex;
-  justify-content: center;
-  height: 700px;
+#footer {
+  height: 25px;
 }
-
 li {
   color: blue;
   margin-bottom: 10px;
 }
 
-nav {
+#nav_snb {
   padding: 20px;
-  border: 2px solid black;
-  width: 25%;
-  max-width: 300px;
+  min-width: 200px;
+}
+
+#nav_snp {
+  padding: 25px;
+  min-width: 250px;
+}
+#content_top {
+  height: 75px;
+  background-color: brown;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+}
+
+#content_top button {
+  width: 55px;
+  height: 55px;
+}
+#content_top h1 {
+  padding: 10px;
+}
+#month_frame {
+  height: calc(100% - 75px);
 }
 
 nav li {
@@ -53,18 +79,28 @@ aside {
   display: inline-block;
 }
 
-.container {
-  width: 90%;
-  margin: 0 auto;
+#container {
+  width: 100%;
+  height: calc(100% - 86px);
   background-color: bisque;
+  display: flex;
 }
 
-button {
+#section_cen {
+  flex: 1;
+  height: 100%;
+}
+
+#content {
+  height: 100%;
+}
+
+/* button {
   padding: 10px;
   position: absolute;
   bottom: 50px;
   right: 50px;
-}
+} */
 
 h1::first-letter {
   font-size: 30px;
@@ -73,29 +109,27 @@ h1::first-letter {
 li::first-line {
   color: brown;
 }
-article {
-  border: 1px solid red;
-  flex: 1;
-  min-width: 500px;
-}
+
 /* 
 h3 + p ::first-line {
 } */
 
 table {
-  flex: 1;
   width: 100%;
-  height: 90%;
+  height: 100%;
+}
+
+th {
+  text-align: left;
+  height: 50px;
+}
+td {
+  width: 100px;
+  vertical-align: top;
+  border: 1px solid black;
 }
 
 article p {
   height: 10%;
   border: 1px solid blue;
-}
-
-tr,
-td {
-  border: 1px solid black;
-  width: 50px;
-  height: 50px;
 }
