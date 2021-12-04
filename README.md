@@ -1,8 +1,8 @@
-# Comraids
+# Comrade
 
 일정 조율 웹 어플리케이션
 
-## Next js + mongo DB
+## MERN (Mongo + Express + React + Node.js)
 
 [공식 문서](https://docs.nestjs.com/techniques/mongodb)
 
