@@ -117,3 +117,11 @@ delete /calendar/:id/:user_id/schedule?month=[]&day=[array]
 html css js
 node js, express(nest), mongo
 react(next)
+
+일정 등록은 팝업이 좋을지도?
+관리자만 본명 확인 가능, 다른사람들은 익명으로
+달력 만들때 설정 가능
+
+일괄등록-> 달력선택 드래그 선택 (새페이지)
+겹치는 일정은 append
+
