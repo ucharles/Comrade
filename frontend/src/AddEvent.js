@@ -2,22 +2,31 @@ import React, { useState } from "react";
 import DatePicker, { Calendar, DateObject } from "react-multi-date-picker";
 import TimePicker from "react-multi-date-picker/plugins/time_picker";
 
-const dateFormat = "YYYY/MM/DD";
+const dateFormat = "YYYY-MM-DD";
 
 const AddEvent = () => {
+  // console.log(Intl.DateTimeFormat().resolvedOptions().timeZone);
+  // console.log(new Date().toTimeString().slice(9));
+  // console.log(new Date().getTimezoneOffset() / -60);
+
   const [dateValue, setDateValue] = useState([new DateObject()]);
+  // 초기값 context화
+  const [weekStartDayIndex, setWeekStartDayIndex] = useState(0);
+
   const [startTime, setStartTime] = useState();
   const [endTime, setEndTime] = useState();
-  const [weekStartDayIndex, setWeekStartDayIndex] = useState(0);
 
   const handleSubmit = (event) => {
     event.preventDefault();
     //value.map((date) => console.log(date.format()));
+    // 대충 넘기면 백엔드가 알아서 해주겠지..
     console.log(
       JSON.stringify({
         date: dateValue.map((date) => date.format()),
         startTime: startTime.toString(),
         endTime: endTime.toString(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        timezoneOffset: new Date().getTimezoneOffset() / -60,
       })
     );
   };
@@ -27,7 +36,9 @@ const AddEvent = () => {
   };
 
   const dateResetHandler = () => {
-    setDateValue([]);
+    setDateValue([new DateObject()]);
+    setStartTime(null);
+    setEndTime(null);
   };
 
   return (
@@ -58,7 +69,7 @@ const AddEvent = () => {
           showOtherDays={true}
         />
         <div>
-          <span>Start Time</span>
+          <label>Start Time</label>
           <DatePicker
             value={startTime}
             onChange={setStartTime}
@@ -68,7 +79,7 @@ const AddEvent = () => {
           />
         </div>
         <div>
-          <span>End Time</span>
+          <label>End Time</label>
           <DatePicker
             value={endTime}
             onChange={setEndTime}
@@ -77,15 +88,14 @@ const AddEvent = () => {
             plugins={[<TimePicker hideSeconds />]}
           />
         </div>
-
-        <p>
+        <div>
           <button type="submit">Submit</button>
-        </p>
-        <p>
+        </div>
+        <div>
           <button type="button" onClick={dateResetHandler}>
             Reset
           </button>
-        </p>
+        </div>
       </form>
     </React.Fragment>
   );

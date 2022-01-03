@@ -1,4 +1,5 @@
 import "./App.css";
+
 import React from "react";
 import {
   Route,
@@ -7,14 +8,14 @@ import {
   BrowserRouter as Router,
 } from "react-router-dom";
 import AddEvent from "./AddEvent";
-import Calendar from "./Calendar";
+import MyCalendar from "./Calendar";
 import ViewDayEvent from "./ViewDayEvent";
 
 const App = () => {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Calendar />} />
+        <Route path="/" element={<MyCalendar />} />
         <Route path="/new" element={<AddEvent />} />
         <Route path="/:date" element={<ViewDayEvent />} />
       </Routes>

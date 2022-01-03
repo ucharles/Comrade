@@ -36,3 +36,31 @@
     transform: rotate(360deg);
   }
 } */
+@import url("https://fonts.googleapis.com/css?family=Roboto:300,400&display=swap");
+
+:root {
+  /* Colors */
+  --color-white: #fff;
+  --color-black: #000;
+  --color-border-lightgray: rgba(0, 0, 0, 0.16);
+  --color-lightgray: #f0f3f4;
+  --color-red: #d32f2f;
+
+  /* Dimensions */
+  --footer-menu-height: 60px;
+}
+
+html {
+  box-sizing: border-box;
+  font-size: 72.55%;
+}
+
+body {
+  margin: 0;
+  overflow-x: hidden;
+  padding-bottom: var(--footer-menu-height);
+  font-family: "Roboto", sans-serif;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
