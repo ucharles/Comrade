@@ -1,13 +1,14 @@
-.sticky {
-  position: sticky;
-  top: 0;
+/* Header */
+.float-button {
+  position: fixed;
+  left: 1vh;
+  top: 1vh;
   z-index: 2000;
 }
-
-/* Header */
 .react-calendar-timeline .rct-header-root {
   border-bottom: none;
-  position: relative;
+  position: sticky;
+  top: 0;
   z-index: 99;
   box-shadow: var(--color-border-lightgray) 0 0 1rem;
   text-align: center;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Timeline, {
   TimelineHeaders,
   SidebarHeader,
@@ -59,33 +59,73 @@ const items = [
 ];
 
 const ViewDayEvent = (props) => {
-  const [sidebarWidth, setSideBarWidth] = useState(0);
+  const [width, setWidth] = useState(window.innerWidth);
+  function handleWindowSizeChange() {
+    setWidth(window.innerWidth);
+  }
+  useEffect(() => {
+    window.addEventListener("resize", handleWindowSizeChange);
+    return () => {
+      window.removeEventListener("resize", handleWindowSizeChange);
+    };
+  }, []);
+  const isMobile = width <= 768;
+
+  // const [sidebarWidth, setSideBarWidth] = useState(0);
   const inputDate = useParams().date;
-  const defaultTimeStart = moment(inputDate)
+
+  let defaultTimeStart = moment(inputDate)
     .startOf("day")
-    .add(12, "hour")
+    .add(isMobile ? 12 : 0, "hour")
     .toDate();
-  const defaultTimeEnd = moment(inputDate)
+  let defaultTimeEnd = moment(inputDate)
     .startOf("day")
-    .add(19, "hour")
+    .add(isMobile ? 19 : 24, "hour")
     .toDate();
+
   const defaultTimeRange = defaultTimeEnd - defaultTimeStart;
   const defaultVisableTimeStart = moment(inputDate).startOf("day").toDate();
   const defaultVisableTimeEnd = moment(inputDate).add(24, "hour");
 
   console.log(defaultTimeStart);
 
-  const sideBarHandler = () => {
-    sidebarWidth === 0 ? setSideBarWidth(150) : setSideBarWidth(0);
+  // const sideBarHandler = () => {
+  //   sidebarWidth === 0 ? setSideBarWidth(150) : setSideBarWidth(0);
+  // };
+  const intervalRenderer = ({ intervalContext, getIntervalProps, data }) => {
+    return (
+      <div
+        {...getIntervalProps()}
+        className={`rct-dateHeader ${
+          data.isMonth ? "rct-dateHeader-primary" : ""
+        }`}
+        onClick={() => {
+          return false;
+        }}>
+        <span
+          style={{
+            position: data.isMonth ? "sticky" : "static",
+
+            left: "0",
+            right: "0",
+            padding: "0 6rem",
+
+            // padding: "0 1rem",
+          }}>
+          {intervalContext.intervalText}
+        </span>
+      </div>
+    );
   };
 
   return (
     <React.Fragment>
-      <div>
+      {/* <div className="float-button">
         <button type="button" onClick={sideBarHandler}>
-          {sidebarWidth === 0 ? "Open Sidebar" : "Close Sidebar"}
+          {sidebarWidth === 0 ? "Open" : "Close"}
         </button>
-      </div>
+      </div> */}
+
       {/* <div>{inputDate}</div> */}
       <div>
         <Timeline
@@ -96,7 +136,7 @@ const ViewDayEvent = (props) => {
           minZoom={defaultTimeRange}
           maxZoom={defaultTimeRange}
           canMove={false}
-          sidebarWidth={sidebarWidth}
+          sidebarWidth={isMobile ? window.innerWidth / 5 : 150}
           onTimeChange={(_start, _end, updateScrollCanvas) => {
             if (
               _start > defaultVisableTimeStart &&
@@ -113,10 +153,11 @@ const ViewDayEvent = (props) => {
             {/* 내용을 가운데에 고정하고 싶음 */}
             <DateHeader
               unit="primaryHeader"
-              labelFormat="YYYY/MM/DD dddd"
               headerData={{ isMonth: true }}
+              labelFormat="YYYY/MM/DD dddd"
+              intervalRenderer={intervalRenderer}
             />
-            <DateHeader unit="hour" labelFormat="HH:00" />
+            <DateHeader unit="hour" labelFormat="HH" />
           </TimelineHeaders>
         </Timeline>
       </div>
