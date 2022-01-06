@@ -1,83 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import FullCalendar from "@fullcalendar/react"; // must go before plugins
 import dayGridPlugin from "@fullcalendar/daygrid"; // a plugin!
 import interactionPlugin from "@fullcalendar/interaction"; // needed for dayClick
 import Button from "./shared/components/FormElements/Button";
+import { useHttpClient } from "./shared/hooks/http-hook";
 
-const EVENTS = [
-  {
-    id: 1,
-    title: "event 2",
-    start: "2022-01-01T12:30:00Z",
-    end: "2022-01-01T14:00:00Z",
-    resourceId: 1,
-  },
-  {
-    id: 2,
-    title: "event 3",
-    start: "2021-12-31T13:30:00Z",
-    end: "2021-12-31T14:00:00Z",
-    resourceId: 1,
-  },
-  {
-    id: 3,
-    title: "event 4",
-    start: "2021-12-31T13:30:00Z",
-    end: "2021-12-31T14:00:00Z",
-    resourceId: 1,
-  },
-  {
-    id: 4,
-    title: "event 5",
-    start: "2021-12-31T13:30:00Z",
-    end: "2021-12-31T14:00:00Z",
-    resourceId: 1,
-  },
-  {
-    id: 5,
-    title: "event 6",
-    start: "2021-12-31T15:30:00Z",
-    end: "2021-12-31T16:00:00Z",
-    resourceId: 1,
-  },
-  {
-    id: 6,
-    title: "event 6",
-    start: "2022-01-06T15:30:00Z",
-    end: "2022-01-06T16:00:00Z",
-    resourceId: 1,
-  },
-  {
-    id: 7,
-    title: "event 6",
-    start: "2022-01-06T15:30:00Z",
-    end: "2022-01-06T16:00:00Z",
-    resourceId: 1,
-  },
-  {
-    id: 8,
-    title: "event 6",
-    start: "2022-01-06T15:30:00Z",
-    end: "2022-01-06T16:00:00Z",
-    resourceId: 1,
-  },
-  {
-    id: 9,
-    title: "event 6",
-    start: "2022-01-06T15:30:00Z",
-    end: "2022-01-06T16:00:00Z",
-    resourceId: 1,
-  },
-];
+// const EVENTS = [
+//   {
+//     id: 1,
+//     title: "event 2",
+//     start: "2022-01-01T12:30:00Z",
+//     end: "2022-01-01T14:00:00Z",
+//     resourceId: 1,
+//   },
+// ];
 
 const MyCalendar = () => {
-  console.log(new Date("2021-12-31T12:30:00Z"));
   // Setup the localizer by providing the moment (or globalize) Object
   // to the correct localizer.
+  const { isLoading, error, sendRequest, clearError } = useHttpClient();
+  const [events, setEvents] = useState([]);
 
   const navigate = useNavigate();
   const [weekStartDayIndex, setWeekStartDayIndex] = useState(0);
+
+  useEffect(() => {
+    // default is GET method
+    const fetchPlaces = async () => {
+      try {
+        const responseData = await sendRequest(
+          `${process.env.REACT_APP_BACKEND_URL}/events`
+        );
+        setEvents(
+          responseData.events.map((data) => {
+            return {
+              id: data.id,
+              title: data.title,
+              start: data.startTime,
+              end: data.endDate,
+              resourceId: 1,
+            };
+          })
+        );
+      } catch (err) {}
+    };
+    fetchPlaces();
+  }, [sendRequest]);
 
   const dateClickHandler = (arg) => {
     let path = arg.dateStr;
@@ -113,7 +82,7 @@ const MyCalendar = () => {
           timeZone="local"
           plugins={[dayGridPlugin, interactionPlugin]}
           initialView="dayGridMonth"
-          events={EVENTS}
+          events={events}
           dateClick={dateClickHandler}
           firstDay={weekStartDayIndex}
           height="90vh"
