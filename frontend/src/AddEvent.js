@@ -1,15 +1,10 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-
 import DatePicker, { Calendar, DateObject } from "react-multi-date-picker";
 import TimePicker from "react-multi-date-picker/plugins/time_picker";
-import { useHttpClient } from "./shared/hooks/http-hook";
 
 const dateFormat = "YYYY-MM-DD";
 
 const AddEvent = () => {
-  const { isLoading, error, sendRequest, clearError } = useHttpClient();
-
   // console.log(Intl.DateTimeFormat().resolvedOptions().timeZone);
   // console.log(new Date().toTimeString().slice(9));
   // console.log(new Date().getTimezoneOffset() / -60);
@@ -20,27 +15,20 @@ const AddEvent = () => {
 
   const [startTime, setStartTime] = useState();
   const [endTime, setEndTime] = useState();
-  const navigate = useNavigate();
 
-  const addEventSubmitHandler = async (event) => {
+  const handleSubmit = (event) => {
     event.preventDefault();
-    try {
-      await sendRequest(
-        `${process.env.REACT_APP_BACKEND_URL}/events`,
-        "POST",
-        JSON.stringify({
-          date: dateValue.map((date) => date.format()),
-          startTime: startTime.toString(),
-          endTime: endTime.toString(),
-          timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-          timezoneOffset: new Date().getTimezoneOffset() / -60,
-        }),
-        { "Content-Type": "application/json" }
-      );
-      navigate("/");
-    } catch (err) {}
     //value.map((date) => console.log(date.format()));
     // 대충 넘기면 백엔드가 알아서 해주겠지..
+    console.log(
+      JSON.stringify({
+        date: dateValue.map((date) => date.format()),
+        startTime: startTime.toString(),
+        endTime: endTime.toString(),
+        timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        timezoneOffset: new Date().getTimezoneOffset() / -60,
+      })
+    );
   };
 
   const weekStartDayHandler = (event) => {
@@ -70,7 +58,7 @@ const AddEvent = () => {
           <option value="6">Sat</option>
         </select>
       </div>
-      <form onSubmit={addEventSubmitHandler}>
+      <form onSubmit={handleSubmit}>
         <Calendar
           multiple
           value={dateValue}
