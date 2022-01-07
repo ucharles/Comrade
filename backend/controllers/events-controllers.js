@@ -22,6 +22,24 @@ const getEvents = async (req, res, next) => {
 
 const getEventsByDate = async (req, res, next) => {
   const inputDate = req.params.date;
+  // input: 달력 정보, 날짜, 유저의 위치 정보
+
+  // check:
+  // 유효한 날짜 형식인지?
+  // 요청하는 달력이 이 유저가 속한 달력인지?
+  // 관리자인지?: 관리자면 일정 확정 권한을 줘야 함 <- 프론트가 할일?
+
+  // 필요한 정보:
+  // 입력받은 timezone 기준으로 일정을 계산
+  // 입력받은 날짜를 기준으로 starTime 혹은 endTime가 그 날짜 안에 있는 경우
+  // 입력: 2021-01-01 -> start가 2021-12-31이어도 end가 2021-01-01에 있으면 추출 대상
+  // 달력: 속한 유저들
+  // 이벤트: 속한 유저들의 일정들
+
+  // 출력할 정보
+  // timezone 기준으로 추출한 달력에 속한 유저들의 일정
+  // 일정들의 교집합(계산)
+  //
 
   let events;
   try {

@@ -22,6 +22,10 @@ const userSchema = new Schema({
     type: String,
     required: true,
   },
+  region: {
+    type: String,
+    required: true,
+  },
   calendars: [
     { type: mongoose.Types.ObjectId, required: true, ref: "Calendar" },
   ],
