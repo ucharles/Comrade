@@ -1,5 +1,5 @@
 // in src/posts.js
-import * as React from "react";
+import React from "react";
 import { useMediaQuery } from "@mui/material";
 import {
   List,

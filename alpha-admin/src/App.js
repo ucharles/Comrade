@@ -1,4 +1,4 @@
-import * as React from "react";
+import React from "react";
 import { PostList, PostEdit, PostCreate } from "./users/pages/Posts";
 import PostIcon from "@mui/icons-material/Book";
 import { Route } from "react-router-dom";
@@ -11,6 +11,8 @@ import { Dashboard } from "./layout/Dashboard";
 import SigniInSide from "./users/pages/SignInSide";
 import SignUp from "./users/pages/Signup";
 import CreateCalendar from "./calendars/pages/CreateCalendar";
+import AddEvents from "./calendars/pages/AddEvents";
+import EditEvents from "./calendars/pages/EditEvents";
 
 import jsonServerProvider from "ra-data-json-server";
 import UserSetting from "./users/pages/UserSetting";
@@ -27,7 +29,8 @@ const App = () => (
     <CustomRoutes>
       <Route exact path="/calendar/new" element={<CreateCalendar />} />
       <Route exact path="/calendar/:id" element={<SignUp />} />
-      <Route exact path="/calendar/:id/new" element={<SignUp />} />
+      <Route exact path="/calendar/event" element={<AddEvents />} />
+      <Route exact path="/calendar/edit" element={<EditEvents />} />
       <Route exact path="/calendar/:id/:date" element={<SignUp />} />
       <Route exact path="/settings" element={<UserSetting />} />
     </CustomRoutes>

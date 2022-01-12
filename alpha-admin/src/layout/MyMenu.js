@@ -64,8 +64,8 @@ function stringAvatar(name) {
 }
 
 const MyMenu = ({ onMenuClick, logout }) => {
-  const [open, setOpen] = React.useState(true);
-  const [selectedIndex, setSelectedIndex] = React.useState();
+  const [open, setOpen] = useState(true);
+  const [selectedIndex, setSelectedIndex] = useState();
 
   const handleListItemClick = (event, index) => {
     setSelectedIndex(index);
@@ -98,7 +98,7 @@ const MyMenu = ({ onMenuClick, logout }) => {
           <List component="div" disablePadding>
             <ListItemButton
               component="a"
-              href="/#/simple-list"
+              href="/#"
               selected={selectedIndex === 0}
               onClick={(event) => handleListItemClick(event, 0)}>
               <ListItemIcon>
@@ -108,6 +108,8 @@ const MyMenu = ({ onMenuClick, logout }) => {
             </ListItemButton>
 
             <ListItemButton
+              component="a"
+              href="/#"
               selected={selectedIndex === 1}
               onClick={(event) => handleListItemClick(event, 1)}>
               <ListItemIcon>
@@ -118,7 +120,10 @@ const MyMenu = ({ onMenuClick, logout }) => {
           </List>
         </Collapse>
 
-        <ListItemButton component="a" href="/#/calendar/new">
+        <ListItemButton
+          component="a"
+          href="/#/calendar/new"
+          onClick={(event) => handleListItemClick(event, null)}>
           <ListItemIcon>
             <AddIcon />
           </ListItemIcon>
@@ -127,14 +132,17 @@ const MyMenu = ({ onMenuClick, logout }) => {
 
         <Divider />
 
-        <ListItemButton component="a" href="/#/settings">
+        <ListItemButton
+          component="a"
+          href="/#/settings"
+          onClick={(event) => handleListItemClick(event, null)}>
           <ListItemIcon>
             <SettingsIcon />
           </ListItemIcon>
           <ListItemText primary="Account Setting" />
         </ListItemButton>
 
-        <ListItemButton component="a" href="/#/logout">
+        <ListItemButton component="a" href="/#/logout" onClick={logout}>
           <ListItemIcon>
             <LogoutIcon />
           </ListItemIcon>
