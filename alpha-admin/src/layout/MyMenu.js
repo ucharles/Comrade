@@ -52,12 +52,12 @@ function stringToColor(string) {
   return color;
 }
 
-function stringAvatar(name) {
+function stringAvatar(name, width, height) {
   return {
     sx: {
       bgcolor: stringToColor(name),
-      width: 35,
-      height: 35,
+      width,
+      height,
     },
     children: `${name[0][0].toUpperCase()}`,
   };
@@ -102,7 +102,10 @@ const MyMenu = ({ onMenuClick, logout }) => {
               selected={selectedIndex === 0}
               onClick={(event) => handleListItemClick(event, 0)}>
               <ListItemIcon>
-                <Avatar src="https://www.1999.co.jp/itbig81/10812608.jpg" />
+                <Avatar
+                  sx={{ width: 35, height: 35 }}
+                  src="https://www.1999.co.jp/itbig81/10812608.jpg"
+                />
               </ListItemIcon>
               <ListItemText primary="Calendar 1" />
             </ListItemButton>
@@ -113,7 +116,7 @@ const MyMenu = ({ onMenuClick, logout }) => {
               selected={selectedIndex === 1}
               onClick={(event) => handleListItemClick(event, 1)}>
               <ListItemIcon>
-                <Avatar {...stringAvatar("Calendar 2")} />
+                <Avatar {...stringAvatar("Calendar 2", 35, 35)} />
               </ListItemIcon>
               <ListItemText primary="Calendar 2" />
             </ListItemButton>

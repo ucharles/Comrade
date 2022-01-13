@@ -66,8 +66,8 @@ export default function CreateCalendar() {
 
   return (
     <ThemeProvider theme={theme}>
+      <Title title={process.env.REACT_APP_TITLE} />
       <Card sx={{ height: "100%" }}>
-        <Title title={process.env.REACT_APP_TITLE} />
         <Container component="main" maxWidth="xs">
           <CssBaseline />
           <Box
