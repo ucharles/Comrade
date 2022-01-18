@@ -19,9 +19,9 @@ router.post(
   [
     check("username").trim().not().isEmpty(),
     check("email").normalizeEmail().isEmail(),
-    check("password").isLength({ min: 6 }),
-    check("confirmPassword").isLength({ min: 6 }),
-    check("region").not().isEmpty(),
+    check("password").trim().isLength({ min: 6 }),
+    check("confirmPassword").trim().isLength({ min: 6 }),
+    check("region").trim().not().isEmpty(),
   ], // express validator
   usersControllers.signup
 );

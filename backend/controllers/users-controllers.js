@@ -25,6 +25,111 @@ const getUsers = async (req, res, next) => {
   res.json({ users: users.map((user) => user.toObject({ getters: true })) });
 };
 
+const signup = async (req, res, next) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    return next(
+      new HttpError("Invalid input passed, please check your data.", 422)
+    );
+  }
+
+  const { username, email, password, confirmPassword, region } = req.body;
+
+  let existingUser;
+  try {
+    existingUser = await User.findOne({ email: email });
+  } catch (err) {
+    const error = new HttpError("Signup error, please try again.", 500);
+    return next(error);
+  }
+
+  if (existingUser) {
+    const error = new HttpError(
+      "User exists already, please login instead.",
+      422
+    );
+    return next(error);
+  }
+
+  if (password !== confirmPassword) {
+    const error = new HttpError(
+      "Password unmatch. Please confirm password.",
+      422
+    );
+    return next(error);
+  }
+
+  // if (!Object.values(timezoneEnum).includes(region)) {
+  //   const error = new HttpError("Invalid timezone.", 422);
+  //   return next(error);
+  // }
+
+  // password 암호화
+  let hashedPassword;
+  try {
+    hashedPassword = await bcrypt.hash(password, 12);
+  } catch (err) {
+    const error = new HttpError(
+      "Could not create user, Please try again.",
+      500
+    );
+    return next(error);
+  }
+
+  let image;
+  try {
+    image = req.file.path;
+  } catch (error) {
+    image = null;
+  }
+
+  const createdUser = new User({
+    username,
+    email,
+    image: image,
+    password: hashedPassword,
+    region,
+    calendars: [],
+  });
+
+  try {
+    await createdUser.save();
+  } catch (err) {
+    const error = new HttpError("Signing up falied, please try again.", 500);
+    return next(error);
+  }
+
+  let token;
+  try {
+    token = jwt.sign(
+      {
+        userId: createdUser.id,
+        email: createdUser.email,
+        region: region,
+      },
+      JWT_PRIVATE_KEY,
+      { expiresIn: JWT_EXPIRES }
+    );
+  } catch (err) {
+    const error = new HttpError("Signing up falied, please try again.", 500);
+    return next(error);
+  }
+
+  // res.status(201).json({
+  //   userId: createdUser.id,
+  //   email: createdUser.email,
+  //   username: createdUser.username,
+  //   region: region,
+  //   token: token,
+  // });
+
+  res
+    .status(201)
+    .cookie("token", token, { httpOnly: true })
+    .send("Cookie Shipped");
+};
+
 const login = async (req, res, next) => {
   const { email, password, region } = req.body;
 
@@ -91,104 +196,6 @@ const login = async (req, res, next) => {
   //   username: existingUser.username,
   //   token: token,
   // });
-  res
-    .status(201)
-    .cookie("token", token, { httpOnly: true })
-    .send("Cookie Shipped");
-};
-
-const signup = async (req, res, next) => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    return next(
-      new HttpError("Invalid input passed, please check your data.", 422)
-    );
-  }
-
-  const { username, email, password, confirmPassword, region } = req.body;
-
-  let existingUser;
-  try {
-    existingUser = await User.findOne({ email: email });
-  } catch (err) {
-    const error = new HttpError("Signup error, please try again.", 500);
-    return next(error);
-  }
-
-  if (existingUser) {
-    const error = new HttpError(
-      "User exists already, please login instead.",
-      422
-    );
-    return next(error);
-  }
-
-  if (password !== confirmPassword) {
-    const error = new HttpError(
-      "Password unmatch. Please confirm password.",
-      422
-    );
-    return next(error);
-  }
-
-  if (!Object.values(timezoneEnum).includes(region)) {
-    const error = new HttpError("Invalid timezone.", 422);
-    return next(error);
-  }
-
-  // password 암호화
-  let hashedPassword;
-  try {
-    hashedPassword = await bcrypt.hash(password, 12);
-  } catch (err) {
-    const error = new HttpError(
-      "Could not create user, Please try again.",
-      500
-    );
-    return next(error);
-  }
-
-  const createdUser = new User({
-    username,
-    email,
-    image: req.file.path || null,
-    password: hashedPassword,
-    region,
-    calendars: [],
-  });
-
-  try {
-    await createdUser.save();
-  } catch (err) {
-    const error = new HttpError("Signing up falied, please try again.", 500);
-    return next(error);
-  }
-
-  let token;
-  try {
-    token = jwt.sign(
-      {
-        userId: createdUser.id,
-        email: createdUser.email,
-        region: region,
-      },
-      JWT_PRIVATE_KEY,
-      { expiresIn: JWT_EXPIRES }
-    );
-  } catch (err) {
-    const error = new HttpError("Signing up falied, please try again.", 500);
-    return next(error);
-  }
-
-  // res.status(201).json({
-  //   userId: createdUser.id,
-  //   email: createdUser.email,
-  //   username: createdUser.username,
-  //   region: region,
-  //   token: token,
-  // });
-
   res
     .status(201)
     .cookie("token", token, { httpOnly: true })
