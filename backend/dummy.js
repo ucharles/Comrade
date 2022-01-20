@@ -1,4 +1,6 @@
 const moment = require("moment-timezone");
+const timezoneEnum = require("./util/timezone");
+console.log(!!timezoneEnum["a"]);
 
 console.log(moment.tz("2021-01-01", "asia/seoul").add(1, "day"));
 

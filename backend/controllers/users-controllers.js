@@ -3,7 +3,7 @@ const { validationResult } = require("express-validator");
 
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
-const timezoneEnum = require("timezone-enum");
+const timezoneEnum = require("../util/timezone");
 
 const User = require("../models/user-model");
 
@@ -60,10 +60,10 @@ const signup = async (req, res, next) => {
     return next(error);
   }
 
-  // if (!Object.values(timezoneEnum).includes(region)) {
-  //   const error = new HttpError("Invalid timezone.", 422);
-  //   return next(error);
-  // }
+  if (!timezoneEnum[region]) {
+    const error = new HttpError("Invalid timezone.", 422);
+    return next(error);
+  }
 
   // password 암호화
   let hashedPassword;
@@ -165,7 +165,7 @@ const login = async (req, res, next) => {
     return next(error);
   }
 
-  if (!Object.values(timezoneEnum).includes(region)) {
+  if (!timezoneEnum[region]) {
     const error = new HttpError(
       "Invalid credentials, could not log you in.",
       403
