@@ -131,7 +131,7 @@ const signup = async (req, res, next) => {
 };
 
 const login = async (req, res, next) => {
-  const { email, password, region } = req.body;
+  const { email, password } = req.body;
 
   let existingUser;
   try {
@@ -165,20 +165,24 @@ const login = async (req, res, next) => {
     return next(error);
   }
 
-  if (!timezoneEnum[region]) {
-    const error = new HttpError(
-      "Invalid credentials, could not log you in.",
-      403
-    );
-    return next(error);
-  }
+  // if (!timezoneEnum[region]) {
+  //   const error = new HttpError(
+  //     "Invalid credentials, could not log you in.",
+  //     403
+  //   );
+  //   return next(error);
+  // }
 
   // JWT 토큰 생성
   let token;
 
   try {
     token = jwt.sign(
-      { userId: existingUser.id, email: existingUser.email, region: region },
+      {
+        userId: existingUser.id,
+        email: existingUser.email,
+        region: existingUser.region,
+      },
       JWT_PRIVATE_KEY,
       { expiresIn: JWT_EXPIRES }
     );
@@ -206,13 +210,9 @@ const getUser = async (req, res, next) => {
   // 회원정보 수정 전 정보 표시
   let user;
 
-  const token = req.cookies.token;
-  const payload = jwt.verify(token, JWT_PRIVATE_KEY);
-  const { userId, email } = payload;
-
   try {
     // 결과 중 password를 제외함
-    user = await User.findById({ userId }, "-password");
+    user = await User.findById(req.userData.userId, "-password");
   } catch (err) {
     const error = HttpError(
       "something error getting users! please check.",
@@ -236,6 +236,89 @@ const getUser = async (req, res, next) => {
 
 const editUser = async (req, res, next) => {
   // 회원 정보 수정
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(
+      new HttpError("Invalid inputs passed, please check your data.", 422)
+    );
+  }
+  const { username, password, region } = req.body;
+  const userId = req.params.id;
+
+  let user;
+  try {
+    user = await User.findById(userId).exec();
+  } catch (err) {
+    const error = new HttpError(
+      "something went wrong, could not update a place.",
+      500
+    );
+    return next(error);
+  }
+  if (user._id.toString() !== req.userData.userId) {
+    const error = new HttpError("You are not allowed to edit this user.", 401);
+    return next(error);
+  }
+
+  // password 암호화
+  if (password) {
+    let hashedPassword;
+    try {
+      hashedPassword = await bcrypt.hash(password, 12);
+    } catch (err) {
+      const error = new HttpError(
+        "Could not create user, Please try again.",
+        500
+      );
+      return next(error);
+    }
+    user.password = hashedPassword;
+  }
+
+  let image;
+  try {
+    image = req.file.path;
+  } catch (error) {
+    image = null;
+  }
+
+  user.username = username;
+  user.region = region;
+  user.image = image;
+
+  try {
+    await user.save();
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong, could not update user.",
+      500
+    );
+    return next(error);
+  }
+
+  let token;
+  try {
+    token = jwt.sign(
+      {
+        userId: user.id,
+        email: user.email,
+        region: user.region,
+      },
+      JWT_PRIVATE_KEY,
+      { expiresIn: JWT_EXPIRES }
+    );
+  } catch (err) {
+    const error = new HttpError(
+      "Something went wrong, could not update user.",
+      500
+    );
+    return next(error);
+  }
+
+  res
+    .status(201)
+    .cookie("token", token, { httpOnly: true })
+    .send("Cookie Shipped");
 };
 
 const deleteUser = async (req, res, next) => {

@@ -51,5 +51,5 @@ createdAt, updatedAt.
 
 - toBe vs toEqual : 오브젝트 비교 시...
   - toBe는 같은 객체를 가리키고 있는지 확인한다.
-  - 객체의 내용이 같더라도 서로 다른 메모리의 객체는 toBd 사용 시 false를 반환.
+  - 객체의 내용이 같더라도 서로 다른 메모리의 객체는 toBe 사용 시 false를 반환.
   - 객체의 내용만을 비교하려면 toEqual을 사용하자.

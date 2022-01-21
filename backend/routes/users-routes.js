@@ -3,6 +3,7 @@ const { check } = require("express-validator");
 
 const usersControllers = require("../controllers/users-controllers");
 const fileUpload = require("../middleware/file-upload");
+const checkAuth = require("../middleware/check-auth");
 
 // Router() ... HTTP 메소드에 의해 필터링된, 미들웨어를 등록할 수 있는 특별한 객체를 제공.
 const router = express.Router();
@@ -26,8 +27,23 @@ router.post(
   usersControllers.signup
 );
 
+router.use(checkAuth);
+
 router.get("/:id", usersControllers.getUser);
-router.patch("/:id", usersControllers.editUser);
+router.patch(
+  "/:id",
+  fileUpload.single("image"),
+  [
+    check("username").trim().not().isEmpty(),
+    check("password").optional({ nullable: true }).trim().isLength({ min: 6 }),
+    check("confirmPassword")
+      .optional({ nullable: true })
+      .trim()
+      .isLength({ min: 6 }),
+    check("region").trim().not().isEmpty(),
+  ], // express validator
+  usersControllers.editUser
+);
 router.delete("/:id", usersControllers.deleteUser);
 
 module.exports = router;

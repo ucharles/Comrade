@@ -225,3 +225,11 @@ describe("POST /api/users/signup", () => {
       });
   });
 });
+
+describe("POST /api/users/login"),
+  () => {
+    const url = "/api/users/login";
+    test("User is existing", () => {});
+    test("Valid Password", () => {});
+    test("Response is JWT Token in Cookie, ALL CLEAR", () => {});
+  };
