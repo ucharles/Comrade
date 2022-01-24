@@ -37,6 +37,9 @@ createdAt, updatedAt.
 - REST는 Stateless. 클라이언트를 신경쓰지 않는다. 그래서 세션을 사용하지 않음.
 - JWT Token은 서버에서 생성됨. 서버에서만 확인할 수 있는 정보가 포함됨.  
   클라이언트는 모든 요청에 이 토큰을 포함함.
+- csurf + jwt 로 access token 발급하기 (https://as-you-say.tistory.com/253)
+- CSRF 이해하기 (https://github.com/pillarjs/understanding-csrf/)
+- GET 요청에는 JWT Verify Token 하나만 사용, POST, PUT, DELETE는 csrfProtection 토큰을 함께 사용.
 
 ### Jest
 

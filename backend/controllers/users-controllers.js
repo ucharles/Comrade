@@ -325,6 +325,7 @@ const deleteUser = async (req, res, next) => {
   // 회원 정보 삭제
   // 달력 생성자인 경우엔 삭제 불가. 달력을 삭제해야 함.
   // 일정만 등록한 경우엔 삭제 가능. 일정이 전부 삭제되진 않음.
+  res.clearCookie("XSRF-TOKEN");
   res.clearCookie("token");
   res.status(200).json({
     success: true,
@@ -333,6 +334,7 @@ const deleteUser = async (req, res, next) => {
 };
 
 const logout = (req, res, next) => {
+  res.clearCookie("XSRF-TOKEN");
   res.clearCookie("token");
   res.status(200).json({
     success: true,
