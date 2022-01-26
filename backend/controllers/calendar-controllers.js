@@ -5,22 +5,31 @@ const mongoose = require("mongoose");
 
 const User = require("../models/user-model");
 const Calendar = require("../models/calendar-model");
+const Event = require("../models/event-model");
 
 const getCalendarsByUserId = async (req, res, next) => {
+  let userWithCalendars;
   try {
-    user = await User.findById(req.userData.userId);
+    user = await User.findById(req.userData.userId)
+      .populate("calendars")
+      .exec();
   } catch (err) {
     const error = new HttpError("Getting data failed, please try again", 500);
     return next(error);
   }
-  // using map()
-  try {
-    calendars = await Calendar.findById(user.calendars);
-  } catch (err) {
-    const error = new HttpError("Getting data failed, please try again", 500);
-    return next(error);
+  // if(!place || place.length === 0)
+  if (!userWithCalendars || userWithCalendars.calendars.length === 0) {
+    return next(
+      new HttpError("Could not find calendars for the privided id", 404)
+    ); // will be trigger: error handling middleware
   }
+  res.json({
+    calendars: userWithCalendars.calendars.map((calendar) =>
+      calendar.toObject({ getters: true })
+    ),
+  });
 };
+
 const createCalendar = async (req, res, next) => {
   // 달력 생성
   console.log(req.body);
@@ -47,10 +56,7 @@ const createCalendar = async (req, res, next) => {
   try {
     user = await User.findById(req.userData.userId);
   } catch (err) {
-    const error = new HttpError(
-      "Creating calendar failed, please try again",
-      500
-    );
+    const error = new HttpError("Something failed, please try again", 500);
     return next(error);
   }
 
@@ -77,7 +83,7 @@ const createCalendar = async (req, res, next) => {
     sess.endSession();
   } catch (err) {
     const error = new HttpError(
-      "Creating calendar failed, please try again.",
+      "Create calendar failed, please try again.",
       500
     );
     return next(error);
@@ -86,9 +92,114 @@ const createCalendar = async (req, res, next) => {
 };
 const updateCalendarById = async (req, res, next) => {
   // 달력 정보 업데이트... 유저 제명 기능도 넣어야 하나?
+  // 유저 제명 기능은 따로 두는게 나을지도..??
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return next(
+      new HttpError("Invalid inputs passed, please check your data.", 422)
+    );
+  }
+  const { name, description } = req.body;
+  const calendarId = req.params.cid;
+
+  let user;
+  try {
+    user = await User.findById(req.userData.userId);
+  } catch (err) {
+    const error = new HttpError("Something failed, please try again", 500);
+    return next(error);
+  }
+
+  if (!user) {
+    const error = new HttpError("Could not find user for this calendar.", 404);
+    return next(error);
+  }
+
+  const isCalendarMemberInUser = user.calendars.filter((v) => {
+    v.id.toString() === calendarId;
+  });
+
+  if (isCalendarMemberInUser.length === 0) {
+    const error = new HttpError(
+      "Invalid inputs passed, please check your data.",
+      422
+    );
+    return next(error);
+  }
+
+  let calendar;
+  try {
+    calendar = await Calendar.findById(calendarId);
+  } catch (err) {
+    const error = new HttpError("Something failed, please try again", 500);
+    return next(error);
+  }
+
+  if (!calendar) {
+    const error = new HttpError("Could not find calendar for this id.", 404);
+    return next(error);
+  }
+
+  const isCalendarmemberInCalendar = calendar.members.filter((v) => {
+    v.userId.toString() === req.userData.userId;
+  });
+
+  if (isCalendarmemberInCalendar.administrator === false) {
+    const error = new HttpError(
+      "Invalid inputs passed, please check your data.",
+      422
+    );
+    return next(error);
+  }
+
+  calendar.name = name;
+  calendar.description = description;
+
+  try {
+    calendar.image = req.file.path;
+  } catch (error) {
+    null;
+  }
+
+  try {
+    await calendar.save();
+  } catch (err) {
+    const error = new HttpError(
+      "something went wrong, could not update a calendar.",
+      500
+    );
+    return next(error);
+  }
+
+  res.status(200).json({ calendar: calendar.toObject({ getters: true }) });
 };
 const deleteCalendar = async (req, res, next) => {
-  // 달력 삭제. 관련된 이벤트도 삭제함.
+  // 달력 삭제. 관련된 이벤트도 삭제, 유저 정보에 포함된 것도 삭제.
+  const calendarId = req.params.cid;
+
+  let calendar;
+  let events;
+  try {
+    // populate: 컬렉션 간 연결(ref)이 있는 경우에만 사용 가능?
+    calendar = await Calendar.findById(calendarId).populate("creator").exec();
+    events = await Event.find({ calendar: calendar }).exec();
+  } catch (err) {
+    const error = new HttpError("Can not found calendar by id", 500);
+    return next(error);
+  }
+
+  if (!calendar) {
+    const error = new HttpError("Could not find calendar for this id.", 404);
+    return next(error);
+  }
+
+  if (calendar.creator.id !== req.userData.userId) {
+    const error = new HttpError(
+      "You are not allowed to delete this calendar.",
+      401
+    );
+    return next(error);
+  }
 };
 const addMemberToCalendar = async (req, res, next) => {
   // 달력에 멤버 추가. 닉네임, 역할을 입력 받음

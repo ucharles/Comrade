@@ -21,4 +21,14 @@ router.post(
   calendarsControllers.createCalendar
 );
 
+router.patch(
+  "/:cid",
+  fileUpload.single("image"),
+  [
+    check("name").not().isEmpty().isLength({ min: 5, max: 15 }),
+    check("description").isLength({ min: 5, max: 50 }),
+  ],
+  calendarsControllers.updateCalendarById
+);
+
 module.exports = router;
