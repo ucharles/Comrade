@@ -75,7 +75,7 @@ for (num = 0; num < events.length; num++) {
   });
 }
 
-const Editevents = () => {
+const EditEvents = () => {
   const [selectionModel, setSeletionModel] = useState([]);
   const deleteHandler = () => {
     alert("Are you sure you want to delete this event?");
@@ -108,14 +108,12 @@ const Editevents = () => {
               marginY: 1,
               display: "flex",
               flexDirection: "row-reverse",
-            }}
-          >
+            }}>
             <Button
               type="button"
               variant="outlined"
               onClick={deleteHandler}
-              sx={{ mb: 2 }}
-            >
+              sx={{ mb: 2 }}>
               DELETE
             </Button>
           </Box>
@@ -125,4 +123,4 @@ const Editevents = () => {
   );
 };
 
-export default Editevents;
+export default EditEvents;
