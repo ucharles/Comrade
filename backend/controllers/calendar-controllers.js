@@ -179,12 +179,21 @@ const deleteCalendar = async (req, res, next) => {
 
   let calendar;
   let events;
+  let users;
   try {
     // populate: 컬렉션 간 연결(ref)이 있는 경우에만 사용 가능?
+    // User와 Event에 연결된 상태.
     calendar = await Calendar.findById(calendarId).populate("creator").exec();
-    events = await Event.find({ calendar: calendar }).exec();
   } catch (err) {
-    const error = new HttpError("Can not found calendar by id", 500);
+    const error = new HttpError("Can not found calendar by id.", 500);
+    return next(error);
+  }
+
+  try {
+    events = await Event.find({ calendar: calendar }).exec();
+    users = await User.find({ calendars: calendar }).exec(); // 배열...
+  } catch (err) {
+    const error = new HttpError("Can not found calendar by id.", 500);
     return next(error);
   }
 
@@ -200,6 +209,32 @@ const deleteCalendar = async (req, res, next) => {
     );
     return next(error);
   }
+  const imagePath = calendar.image;
+
+  try {
+    const sess = await mongoose.startSession();
+    await sess.withTransaction(async () => {
+      await calendar.remove({ session: sess });
+      // place -> place의 creator -> creator에 연결된 user의 places -> 제거
+      calendar.creator.calendars.pull(calendar);
+      await place.creator.save({ session: sess });
+      calendar.calendars.calendars.pull(calendar);
+      await place.creator.save({ session: sess });
+    });
+    sess.endSession();
+  } catch (err) {
+    const error = new HttpError(
+      "cant not found place by id, cant delete place.",
+      500
+    );
+    return next(error);
+  }
+
+  // 이미지 삭제
+  fs.unlink(imagePath, (err) => {
+    err === null ? console.log("delete image: " + imagePath) : console.log(err);
+  });
+  res.status(200).json({ message: "Deleted Calendar." });
 };
 const addMemberToCalendar = async (req, res, next) => {
   // 달력에 멤버 추가. 닉네임, 역할을 입력 받음

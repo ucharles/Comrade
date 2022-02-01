@@ -323,7 +323,22 @@ const editUser = async (req, res, next) => {
 
 const deleteUser = async (req, res, next) => {
   // 회원 정보 삭제
+  const userId = req.userData.userId;
   // 달력 생성자인 경우엔 삭제 불가. 달력을 삭제해야 함.
+
+  let user;
+  try {
+    user = await User.findById(userId).populate("calendars").exec();
+  } catch (err) {
+    const error = new HttpError("Could not found user by id.", 500);
+    return next(error);
+  }
+
+  if (!user) {
+    const error = new HttpError("Could not find user for this id.", 404);
+    return next(error);
+  }
+
   // 일정만 등록한 경우엔 삭제 가능. 일정이 전부 삭제되진 않음.
   res.clearCookie("XSRF-TOKEN");
   res.clearCookie("token");
