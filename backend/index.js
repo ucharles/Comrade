@@ -7,8 +7,8 @@ mongoose
   .connect(uri, { useNewUrlParser: true })
   .then(() => {
     const app = createServer();
-    app.listen(process.env.PORT || 5000, () => {
-      console.log("Server has started!", process.env.PORT || 5000);
+    app.listen(process.env.PORT || 5001, () => {
+      console.log("Server has started!", process.env.PORT || 5001);
     });
   })
   .catch((err) => {
