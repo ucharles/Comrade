@@ -131,7 +131,41 @@ createdAt, updatedAt.
   - 디스크 접근이 적다는 장점
 
 - 데이터 설계
+
   - 첫번째 페이즈에선 데이터 유닛과의 관계를 정의하지 않음.
   - 작업을 수량화: 대기시간, 빈도
   - 각 쓰기 작업의 내구성 식별.
   - 읽기, 쓰기 작업의 나열
+
+  - 데이터간의 관계
+
+  - one-to-one, one-to-many, many-to-many, one-to-zillions(Big Data)
+  - MongoDB는 referencing에 있어서 종속성 검사를 하지 않음. App 작성시 이와 관련된 것은 직접 구현해야 함.
+
+  ### One-to-many
+
+  - 다양한 선택이 존재: embed or reference / can choose the side between "one" and "many"
+  - many side에 embed을 할 경우 많은 중복이 생길 수 있음. (주문의 배송지)
+  - 단순성을 위해 참조 또는 문서 수가 적은 경우, 참조보다 임베딩을 선호한다. (모든 관련 정보가 함께 유지되므로
+  - 가장 많이 검색되는 컬렉션에 embed 하라
+  - 가장 자주 검색되는 document에 있는 관련 문서가 항상 필요하지 않은 경우, 참조를 선호한다.
+
+  ### Many-to-Many
+
+  - 단순화 해서는 안되는 "many-to-many" 관계가 있는지 확인하기.
+  - "many-to-many" 관계는 대체될 수 있습니다. 두 개의 "one-to-many"로. 하지만 문서 모델과는 관련이 없다.
+  - 가장 자주 호출되는 쿼리에 embed 되는 것을 선호한다.
+  - 시간이 흘러도 정적이며, 중복으로 하여금 이익을 얻을 수 있는 정보를 "embed" 하는 것을 선호.
+  - 과한 "embed"된 중복관리를 피하기 위해 "referencing"을 선호한다.
+
+  ### One-to-one
+
+  - 단순성을 위해 참조보다 임베딩을 선호.
+  - 하위 문서(subdocuments)를 사용하여 필드를 구성.
+  - 최적화를 위해 참조를 사용할 것.
+
+  ### One-to-Zillions
+
+  - One-to-Many의 특별한 경우이다.
+  - 유일한 구현 방법은 "one"쪽에서 문서를 참조하는 것.
+  - 쿼리와 코드에 더 많은 주의를 기울일 것. 수십억 개의 문서를 처리한다.
