@@ -75,7 +75,7 @@ for (num = 0; num < events.length; num++) {
   });
 }
 
-const Editevents = () => {
+const EditEvents = () => {
   const [selectionModel, setSeletionModel] = useState([]);
   const deleteHandler = () => {
     alert("Are you sure you want to delete this event?");
@@ -125,4 +125,4 @@ const Editevents = () => {
   );
 };
 
-export default Editevents;
+export default EditEvents;
