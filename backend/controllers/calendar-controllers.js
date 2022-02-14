@@ -64,13 +64,16 @@ const createCalendar = async (req, res, next) => {
     name,
     description,
     image,
-    member: {
-      userId: req.userData.userId,
-      nickname: user.username,
-      role: "Administrator",
-      administrator: "true",
-    },
+    member: [
+      {
+        userId: req.userData.userId,
+        nickname: user.username,
+        role: "Administrator",
+        administrator: "true",
+      },
+    ],
     creator: req.userData.userId,
+    fixedEvents: [],
   });
 
   try {
@@ -90,6 +93,7 @@ const createCalendar = async (req, res, next) => {
   }
   res.status(201).json({ calendar: createdCalendar });
 };
+
 const updateCalendarById = async (req, res, next) => {
   // 달력 정보 업데이트... 유저 제명 기능도 넣어야 하나?
   // 유저 제명 기능은 따로 두는게 나을지도..??

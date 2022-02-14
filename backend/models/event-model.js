@@ -15,6 +15,20 @@ const eventSchema = new Schema(
     },
     creator: { type: mongoose.Types.ObjectId, ref: "User" },
     calendar: { type: mongoose.Types.ObjectId, ref: "Calendar" },
+    fixedEvents: [
+      {
+        _id: { type: mongoose.Types.ObjectId },
+        startTime: {
+          type: Date,
+          required: true,
+        },
+        endTime: {
+          type: Date,
+          required: true,
+        },
+        memberCount: { type: Number, required: true },
+      },
+    ],
   },
   { timestamps: true }
 );
