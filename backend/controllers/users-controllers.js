@@ -6,6 +6,7 @@ const bcrypt = require("bcryptjs");
 const timezoneEnum = require("../util/timezone");
 
 const User = require("../models/user-model");
+const Event = require("../models/event-model");
 
 const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
 const JWT_EXPIRES = process.env.JWT_EXPIRES;
@@ -206,7 +207,7 @@ const login = async (req, res, next) => {
     .send("Cookie Shipped");
 };
 
-const getUser = async (req, res, next) => {
+const getUserById = async (req, res, next) => {
   // 회원정보 수정 전 정보 표시
   let user;
 
@@ -324,7 +325,7 @@ const editUser = async (req, res, next) => {
 const deleteUser = async (req, res, next) => {
   // 회원 정보 삭제
   const userId = req.userData.userId;
-  // 달력 생성자인 경우엔 삭제 불가. 달력을 삭제해야 함.
+  // 달력 생성자인 경우엔 삭제 불가. 달력을 삭제해야 함.(다른 사람에게 양도하거나?)
 
   let user;
   try {
@@ -339,8 +340,36 @@ const deleteUser = async (req, res, next) => {
     return next(error);
   }
 
+  if (user.calendars !== 0) {
+    const error = new HttpError("Delete created calendar first.", 404);
+    return next(error);
+  }
+
+  // 트랜잭션 사용. 두 작업이 모두 완료되거나, 두 작업이 모두 수행되지 않거나.
+  try {
+    const sess = await mongoose.startSession();
+    await sess.withTransaction(async () => {
+      await user.remove({ session: sess });
+      await Event.deleteMany({ creator: userId }).session(sess);
+    });
+    sess.endSession();
+  } catch (err) {
+    const error = new HttpError(
+      "Can not delete user, Can not delete user's events.",
+      500
+    );
+    return next(error);
+  }
+
+  // 이미지 삭제
+  fs.unlink(user.image, (err) => {
+    err === null
+      ? console.log("delete image: " + user.image)
+      : console.log(err);
+  });
+
   // 일정만 등록한 경우엔 삭제 가능. 일정이 전부 삭제되진 않음.
-  res.clearCookie("XSRF-TOKEN");
+  //res.clearCookie("XSRF-TOKEN");
   res.clearCookie("token");
   res.status(200).json({
     success: true,
@@ -349,7 +378,7 @@ const deleteUser = async (req, res, next) => {
 };
 
 const logout = (req, res, next) => {
-  res.clearCookie("XSRF-TOKEN");
+  //res.clearCookie("XSRF-TOKEN");
   res.clearCookie("token");
   res.status(200).json({
     success: true,
@@ -358,7 +387,7 @@ const logout = (req, res, next) => {
 };
 
 exports.getUsers = getUsers;
-exports.getUser = getUser;
+exports.getUserById = getUserById;
 exports.editUser = editUser;
 exports.deleteUser = deleteUser;
 exports.login = login;
