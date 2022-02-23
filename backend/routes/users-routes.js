@@ -40,7 +40,7 @@ router.post(
 
 router.use(checkAuth);
 
-router.get("/:id", usersControllers.getUser);
+router.get("/:id", usersControllers.getUserById);
 router.patch(
   "/:id",
   // csrfProtection,
