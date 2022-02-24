@@ -5,10 +5,15 @@ const checkAuth = require("../middleware/check-auth");
 
 const router = express.Router();
 
-router.use(checkAuth);
+// router.use(checkAuth);
 
 router.get("/", eventsControllers.getEvents);
-router.get("/:date", eventsControllers.getEventsByDate);
+router.get(
+  "/calendar/:calendarId/:date/:timezone",
+  eventsControllers.getIntersectionEventsByDay
+);
+router.get("/user/:userId/:date/:timezone", eventsControllers.getEventsByDate);
+
 router.post("/", eventsControllers.createEvents);
 
 module.exports = router;

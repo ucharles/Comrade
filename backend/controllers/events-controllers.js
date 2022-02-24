@@ -4,6 +4,7 @@ const HttpError = require("../models/http-error");
 const { validationResult } = require("express-validator");
 
 const Event = require("../models/event-model");
+const { maxEndTime } = require("../util/max-end-time");
 
 const getEvents = async (req, res, next) => {
   let events;
@@ -20,9 +21,111 @@ const getEvents = async (req, res, next) => {
 };
 
 const getIntersectionEventsByDay = async (req, res, next) => {
-  const inputCalendar = req.params.calendar;
+  const inputCalendar = req.params.calendarId;
   const inputDate = req.params.date;
-  const timezone = req.params.timezone;
+  const timezone = decodeURIComponent(req.params.timezone);
+
+  const divMinute = 15;
+
+  // 입력받은 timezone을 이용하여 inputDate를 변환
+  // 특정 지역 날짜 + 특정 지역 timezone = UTC
+  const utcInputDate = moment.tz(inputDate + " 00:00", timezone).utc();
+  // YYYY-MM-DDT00:00:00+09:00
+  // {startTime :{"$gte":ISODate('2022-01-22T00:00:00Z')}}
+
+  // MongoDB stores dates as 64-bit integers,
+  // which means that Mongoose does not store timezone information by default.
+  // When you call Date#toString(), the JavaScript runtime will use your OS' timezone.
+
+  let events;
+  try {
+    events = await Event.find({
+      calendar: inputCalendar,
+      startTime: {
+        $gte: new Date(utcInputDate).toISOString(),
+        $lt: new Date(
+          utcInputDate.add({ hours: 23, minutes: 59 })
+        ).toISOString(),
+      },
+    })
+      .sort({ startTime: 1, endTime: 1 })
+      .select({ title: 0, calendar: 0 });
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError(
+      "Querying events error, please try again.",
+      500
+    );
+    return next(error);
+  }
+
+  if (events.length === 0) {
+    const error = new HttpError("Does not exist event Data.", 404);
+    return next(error);
+  }
+
+  const initTime = moment.tz(events[0].startTime, timezone);
+  const initTimeFormat = initTime.format("hh:mm");
+  // 아래걸로는 가장 마지막 종료 시간을 구할 수 없음... 반복문으로 찾아야한다
+  const lastTime = moment.tz(maxEndTime(events), timezone);
+  const lastDiffInit = lastTime.diff(initTime, "minutes") / divMinute;
+  let members = [];
+  let allSchedule = [];
+
+  // 행 채우기
+  for (let eventIndex = 0; eventIndex < events.length; i++) {
+    members[eventIndex] = events[eventIndex].creator;
+    let start = moment.tz(events[eventIndex].startTime, timezone);
+    let end = moment.tz(events[eventIndex].endTime, timezone);
+    let endDiffStartDiv = end.diff(start, "minutes") / divMinute;
+    let startDiffInitDiv = start.diff(initTime, "minutes") / divMinute;
+    let schedule = [];
+    // 열 채우기
+    for (let scheduleIndex = 0; scheduleIndex < lastDiffInit; j++) {
+      if (
+        (scheduleIndex === 0 && startDiffInitDiv === 0) ||
+        scheduleIndex === startDiffInitDiv
+      ) {
+        schedule[scheduleIndex] = "S";
+      } else if (scheduleIndex === endDiffStartDiv + startDiffInitDiv - 1) {
+        schedule[scheduleIndex] = "E";
+      } else if (
+        scheduleIndex > startDiffInitDiv &&
+        scheduleIndex < endDiffStartDiv + startDiffInitDiv - 1
+      ) {
+        schedule[scheduleIndex] = "1";
+      } else {
+        schedule[scheduleIndex] = "0";
+      }
+    }
+    allSchedule.push(schedule);
+  }
+
+  console.log({ events: { allSchedule, members } });
+
+  let intersectionStartTimeArray = [];
+  let intersectionEndTimeArray = [];
+  let intersectionMembersArray = [];
+  let intersectionStart;
+  let intersectionEnd;
+  let intersectionMembers;
+
+  for (let timeDivIndex = 0; timeDivIndex < lastDiffInit; timeDivIndex++) {
+    for (let memberIndex = 0; memberIndex < members.length; memberIndex++) {
+      // 이벤트의 시작인 경우
+      if (allSchedule[memberIndex][timeDivIndex] === "S") {
+        // 시작 시간을 기록
+        intersectionStart = initTime.add(timeDivIndex * divMinute, "minutes");
+      }
+      // 이벤트의 끝인 경우
+      else if (allSchedule[memberIndex][timeDivIndex] === "E") {
+      }
+    }
+  }
+
+  // events 변수 자체가 커서인듯...
+  // https://stackoverflow.com/questions/37024829/cursor-map-toarray-vs-cursor-toarray-thenarray-array-map
+
   // .../api/calendar/:calendarId/date/:day
   // .../api/calendar/:calendarId/month/:yearmonth
   // .../api/calendar/:calendarId/fixed-event/timezone/:timezone
@@ -193,3 +296,4 @@ const createEvents = async (req, res, next) => {
 exports.getEvents = getEvents;
 exports.createEvents = createEvents;
 exports.getEventsByDate = getEventsByDate;
+exports.getIntersectionEventsByDay = getIntersectionEventsByDay;
