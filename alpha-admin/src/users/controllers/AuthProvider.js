@@ -2,6 +2,8 @@
 export default {
   // called when the user attempts to log in
   login: ({ email }) => {
+    // 로그인 API 콜
+    // 저장된 쿠키 확인, 인증키 유무 구분
     localStorage.setItem("email", email);
     // accept all username/password combinations
     return Promise.resolve();
