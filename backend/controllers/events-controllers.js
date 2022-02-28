@@ -65,8 +65,6 @@ const getIntersectionEventsByDay = async (req, res, next) => {
   }
 
   const initTime = moment.tz(events[0].startTime, timezone);
-  const initTimeFormat = initTime.format("hh:mm");
-  // 아래걸로는 가장 마지막 종료 시간을 구할 수 없음... 반복문으로 찾아야한다
   const lastTime = moment.tz(maxEndTime(events), timezone);
   const lastDiffInit = lastTime.diff(initTime, "minutes") / divMinute;
   let members = [];
@@ -106,19 +104,35 @@ const getIntersectionEventsByDay = async (req, res, next) => {
   let intersectionStartTimeArray = [];
   let intersectionEndTimeArray = [];
   let intersectionMembersArray = [];
-  let intersectionStart;
+  let intersectionStart = [];
   let intersectionEnd;
-  let intersectionMembers;
+  let intersectionMembers = [];
 
   for (let timeDivIndex = 0; timeDivIndex < lastDiffInit; timeDivIndex++) {
+    let endFlag = 0;
     for (let memberIndex = 0; memberIndex < members.length; memberIndex++) {
       // 이벤트의 시작인 경우
       if (allSchedule[memberIndex][timeDivIndex] === "S") {
         // 시작 시간을 기록
-        intersectionStart = initTime.add(timeDivIndex * divMinute, "minutes");
+        intersectionMembers.push(members[memberIndex]);
+        intersectionStart.push(timeDivIndex);
       }
       // 이벤트의 끝인 경우
-      else if (allSchedule[memberIndex][timeDivIndex] === "E") {
+      else if (
+        endFlag === 0 &&
+        allSchedule[memberIndex][timeDivIndex] === "E"
+      ) {
+        // E를 만난 경우, 현재의 인덱스를 저장
+        let;
+      }
+      // 세로로 순회 중, S 다음에 0이 나온 경우 (순회 끝)
+      else if (
+        memberIndex > 0 &&
+        allSchedule[memberIndex][timeDivIndex] === "0"
+      ) {
+        if (allSchedule[memberIndex - 1][timeDivIndex] === "S") {
+          continue;
+        }
       }
     }
   }
