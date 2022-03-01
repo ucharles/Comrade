@@ -66,12 +66,12 @@ const getIntersectionEventsByDay = async (req, res, next) => {
 
   const initTime = moment.tz(events[0].startTime, timezone);
   const lastTime = moment.tz(maxEndTime(events), timezone);
-  const lastDiffInit = lastTime.diff(initTime, "minutes") / divMinute;
+  const lastDiffInitDiv = lastTime.diff(initTime, "minutes") / divMinute;
   let members = [];
   let allSchedule = [];
 
   // 행 채우기
-  for (let eventIndex = 0; eventIndex < events.length; i++) {
+  for (let eventIndex = 0; eventIndex < events.length; eventIndex++) {
     members[eventIndex] = events[eventIndex].creator;
     let start = moment.tz(events[eventIndex].startTime, timezone);
     let end = moment.tz(events[eventIndex].endTime, timezone);
@@ -79,7 +79,11 @@ const getIntersectionEventsByDay = async (req, res, next) => {
     let startDiffInitDiv = start.diff(initTime, "minutes") / divMinute;
     let schedule = [];
     // 열 채우기
-    for (let scheduleIndex = 0; scheduleIndex < lastDiffInit; j++) {
+    for (
+      let scheduleIndex = 0;
+      scheduleIndex < lastDiffInitDiv;
+      scheduleIndex++
+    ) {
       if (
         (scheduleIndex === 0 && startDiffInitDiv === 0) ||
         scheduleIndex === startDiffInitDiv
@@ -99,16 +103,15 @@ const getIntersectionEventsByDay = async (req, res, next) => {
     allSchedule.push(schedule);
   }
 
-  console.log({ events: { allSchedule, members } });
+  console.log("allSchedule: " + allSchedule);
+  console.log("events: " + events);
 
-  let intersectionStartTimeArray = [];
-  let intersectionEndTimeArray = [];
-  let intersectionMembersArray = [];
   let intersectionStart = [];
-  let intersectionEnd;
   let intersectionMembers = [];
+  let intersectionJson = [];
+  let intersectionCount = 0;
 
-  for (let timeDivIndex = 0; timeDivIndex < lastDiffInit; timeDivIndex++) {
+  for (let timeDivIndex = 0; timeDivIndex < lastDiffInitDiv; timeDivIndex++) {
     let endFlag = 0;
     for (let memberIndex = 0; memberIndex < members.length; memberIndex++) {
       // 이벤트의 시작인 경우
@@ -116,14 +119,75 @@ const getIntersectionEventsByDay = async (req, res, next) => {
         // 시작 시간을 기록
         intersectionMembers.push(members[memberIndex]);
         intersectionStart.push(timeDivIndex);
+        intersectionCount = intersectionCount + 1;
       }
       // 이벤트의 끝인 경우
       else if (
         endFlag === 0 &&
-        allSchedule[memberIndex][timeDivIndex] === "E"
+        allSchedule[memberIndex][timeDivIndex] === "E" &&
+        intersectionCount >= 2
       ) {
         // E를 만난 경우, 현재의 인덱스를 저장
-        let;
+        console.log("intersectionMembers: " + intersectionMembers);
+        console.log("intersectionStart: " + intersectionStart);
+        endFlag = 1;
+        let endMembers = [];
+        let minDiv = lastDiffInitDiv;
+
+        for (
+          let findEndTimeMemberIndex = memberIndex;
+          findEndTimeMemberIndex < members.length;
+          findEndTimeMemberIndex++
+        ) {
+          if (allSchedule[findEndTimeMemberIndex][timeDivIndex] === "E") {
+            endMembers.push({
+              index: findEndTimeMemberIndex,
+              memberId: members[findEndTimeMemberIndex],
+              startTimeDiv: intersectionStart[findEndTimeMemberIndex],
+            });
+            timeDivIndex - intersectionStart[findEndTimeMemberIndex] < minDiv
+              ? (minDiv = intersectionStart[findEndTimeMemberIndex])
+              : null;
+          }
+        }
+        console.log("memberIndex: " + endMembers[0].index);
+        console.log("memberId: " + endMembers[0].memberId);
+        console.log("startTimeDiv: " + endMembers[0].startTimeDiv);
+        console.log("endTimeIndex:" + timeDivIndex);
+
+        console.log("minDiv: " + minDiv);
+        // 교집합 작성 시작
+        let currentDiv = timeDivIndex;
+        for (
+          let i = intersectionMembers.length - 1;
+          intersectionStart[i] >= minDiv;
+          i--
+        ) {
+          console.log("currentDiv: " + currentDiv);
+          if (intersectionStart[i] < currentDiv) {
+            // 출력용 JSON 작성
+            intersectionJson.push({
+              startTime: moment
+                .tz(events[0].startTime, timezone)
+                .add(intersectionStart[i] * divMinute, "minutes"),
+              endTime: moment
+                .tz(events[0].startTime, timezone)
+                .add(timeDivIndex * divMinute, "minutes"),
+              members: intersectionMembers.slice(0, i + 1).filter((data) => {
+                return data !== "";
+              }), // 멤버 배열 공백 제거
+              depth: currentDiv - intersectionStart[i],
+            });
+            currentDiv = intersectionStart[i];
+          }
+        }
+
+        // 교집합 작성 완료된 멤버는 교집합 pool에서 제외
+        for (let i = 0; i < endMembers.length; i++) {
+          intersectionMembers[endMembers[i].index] = "";
+          intersectionStart[endMembers[i].index] = "";
+          intersectionCount = intersectionCount - 1;
+        }
       }
       // 세로로 순회 중, S 다음에 0이 나온 경우 (순회 끝)
       else if (
@@ -136,6 +200,10 @@ const getIntersectionEventsByDay = async (req, res, next) => {
       }
     }
   }
+  console.log(intersectionStart);
+  console.log(intersectionJson);
+
+  res.status(201).json({ events: intersectionJson });
 
   // events 변수 자체가 커서인듯...
   // https://stackoverflow.com/questions/37024829/cursor-map-toarray-vs-cursor-toarray-thenarray-array-map
