@@ -4,6 +4,7 @@ const HttpError = require("../models/http-error");
 const { validationResult } = require("express-validator");
 
 const Event = require("../models/event-model");
+const Calendar = require("../models/calendar-model");
 const { maxEndTime } = require("../util/max-end-time");
 
 const getEvents = async (req, res, next) => {
@@ -25,6 +26,12 @@ const getIntersectionEventsByDay = async (req, res, next) => {
   const inputDate = req.params.date;
   const timezone = decodeURIComponent(req.params.timezone);
 
+  // 입력된 날짜와 타임존이 유효한지 확인
+  if (!moment.tz(inputDate, timezone).isValid()) {
+    const error = new HttpError("Please check Date or Timezone.", 402);
+    return next(error);
+  }
+
   const divMinute = 15;
 
   // 입력받은 timezone을 이용하여 inputDate를 변환
@@ -38,6 +45,8 @@ const getIntersectionEventsByDay = async (req, res, next) => {
   // When you call Date#toString(), the JavaScript runtime will use your OS' timezone.
 
   let events;
+  let calendarMembers;
+
   try {
     events = await Event.find({
       calendar: inputCalendar,
@@ -49,7 +58,18 @@ const getIntersectionEventsByDay = async (req, res, next) => {
       },
     })
       .sort({ startTime: 1, endTime: 1 })
-      .select({ title: 0, calendar: 0 });
+      .select({ title: 0, calendar: 0 })
+      .exec();
+
+    calendarMembers = await Calendar.findById(inputCalendar)
+      .populate({
+        path: "members",
+        populate: { path: "_id", select: "_id username image" },
+      })
+      .select({
+        members: 1,
+      })
+      .exec();
   } catch (err) {
     console.log(err);
     const error = new HttpError(
@@ -58,6 +78,8 @@ const getIntersectionEventsByDay = async (req, res, next) => {
     );
     return next(error);
   }
+  // console.log(events);
+  // console.log(calendarMembers.members);
 
   if (events.length === 0) {
     const error = new HttpError("Does not exist event Data.", 404);
@@ -67,12 +89,12 @@ const getIntersectionEventsByDay = async (req, res, next) => {
   const initTime = moment.tz(events[0].startTime, timezone);
   const lastTime = moment.tz(maxEndTime(events), timezone);
   const lastDiffInitDiv = lastTime.diff(initTime, "minutes") / divMinute;
-  let members = [];
+  let eventMembers = [];
   let allSchedule = [];
 
   // 행 채우기
   for (let eventIndex = 0; eventIndex < events.length; eventIndex++) {
-    members[eventIndex] = events[eventIndex].creator;
+    eventMembers[eventIndex] = events[eventIndex].creator;
     let start = moment.tz(events[eventIndex].startTime, timezone);
     let end = moment.tz(events[eventIndex].endTime, timezone);
     let endDiffStartDiv = end.diff(start, "minutes") / divMinute;
@@ -103,8 +125,8 @@ const getIntersectionEventsByDay = async (req, res, next) => {
     allSchedule.push(schedule);
   }
 
-  console.log("allSchedule: " + allSchedule);
-  console.log("events: " + events);
+  // console.log("allSchedule: " + allSchedule);
+  // console.log("events: " + events);
 
   let intersectionStart = [];
   let intersectionMembers = [];
@@ -113,11 +135,15 @@ const getIntersectionEventsByDay = async (req, res, next) => {
 
   for (let timeDivIndex = 0; timeDivIndex < lastDiffInitDiv; timeDivIndex++) {
     let endFlag = 0;
-    for (let memberIndex = 0; memberIndex < members.length; memberIndex++) {
+    for (
+      let memberIndex = 0;
+      memberIndex < eventMembers.length;
+      memberIndex++
+    ) {
       // 이벤트의 시작인 경우
       if (allSchedule[memberIndex][timeDivIndex] === "S") {
         // 시작 시간을 기록
-        intersectionMembers.push(members[memberIndex]);
+        intersectionMembers.push(eventMembers[memberIndex]);
         intersectionStart.push(timeDivIndex);
         intersectionCount = intersectionCount + 1;
       }
@@ -128,21 +154,21 @@ const getIntersectionEventsByDay = async (req, res, next) => {
         intersectionCount >= 2
       ) {
         // E를 만난 경우, 현재의 인덱스를 저장
-        console.log("intersectionMembers: " + intersectionMembers);
-        console.log("intersectionStart: " + intersectionStart);
+        // console.log("intersectionMembers: " + intersectionMembers);
+        // console.log("intersectionStart: " + intersectionStart);
         endFlag = 1;
         let endMembers = [];
         let minDiv = lastDiffInitDiv;
 
         for (
           let findEndTimeMemberIndex = memberIndex;
-          findEndTimeMemberIndex < members.length;
+          findEndTimeMemberIndex < eventMembers.length;
           findEndTimeMemberIndex++
         ) {
           if (allSchedule[findEndTimeMemberIndex][timeDivIndex] === "E") {
             endMembers.push({
               index: findEndTimeMemberIndex,
-              memberId: members[findEndTimeMemberIndex],
+              memberId: eventMembers[findEndTimeMemberIndex],
               startTimeDiv: intersectionStart[findEndTimeMemberIndex],
             });
             timeDivIndex - intersectionStart[findEndTimeMemberIndex] < minDiv
@@ -150,12 +176,12 @@ const getIntersectionEventsByDay = async (req, res, next) => {
               : null;
           }
         }
-        console.log("memberIndex: " + endMembers[0].index);
-        console.log("memberId: " + endMembers[0].memberId);
-        console.log("startTimeDiv: " + endMembers[0].startTimeDiv);
-        console.log("endTimeIndex:" + timeDivIndex);
+        // console.log("memberIndex: " + endMembers[0].index);
+        // console.log("memberId: " + endMembers[0].memberId);
+        // console.log("startTimeDiv: " + endMembers[0].startTimeDiv);
+        // console.log("endTimeIndex:" + timeDivIndex);
 
-        console.log("minDiv: " + minDiv);
+        // console.log("minDiv: " + minDiv);
         // 교집합 작성 시작
         let currentDiv = timeDivIndex;
         for (
@@ -163,9 +189,67 @@ const getIntersectionEventsByDay = async (req, res, next) => {
           intersectionStart[i] >= minDiv;
           i--
         ) {
-          console.log("currentDiv: " + currentDiv);
+          let interMembersArray = [];
+          let registeredMembersArray = [];
+          let calendarAllMembers = [];
           if (intersectionStart[i] < currentDiv) {
             // 출력용 JSON 작성
+            let interMembers = intersectionMembers
+              .slice(0, i + 1)
+              .filter((data) => {
+                return data !== "";
+              });
+            let registeredMembers = eventMembers.filter(
+              (item) => !interMembers.includes(item)
+            );
+            for (
+              let index = 0;
+              index < calendarMembers.members.length;
+              index++
+            ) {
+              // 교집합이 있는 경우. id는 객체(object)이므로 string으로 변환 후 비교
+              if (
+                typeof interMembers.find(
+                  (v) =>
+                    v.toString() ===
+                    calendarMembers.members[index]._id._id.toString()
+                ) !== "undefined"
+              ) {
+                interMembersArray.push({
+                  _id: calendarMembers.members[index]._id._id,
+                  image: calendarMembers.members[index]._id.image,
+                  nickname: calendarMembers.members[index].nickname,
+                  administrator: calendarMembers.members[index].administrator,
+                });
+              }
+              // 이벤트는 등록했지만 교집합이 없는 경우
+              else if (
+                typeof registeredMembers.find(
+                  (v) =>
+                    v.toString() ==
+                    calendarMembers.members[index]._id._id.toString()
+                ) !== "undefined"
+              ) {
+                registeredMembersArray.push({
+                  _id: calendarMembers.members[index]._id._id,
+                  image: calendarMembers.members[index]._id.image,
+                  nickname: calendarMembers.members[index].nickname,
+                  administrator: calendarMembers.members[index].administrator,
+                });
+              }
+              // 이벤트를 등록하지 않은 경우
+              else {
+                calendarAllMembers.push({
+                  _id: calendarMembers.members[index]._id._id,
+                  image: calendarMembers.members[index]._id.image,
+                  nickname: calendarMembers.members[index].nickname,
+                  administrator: calendarMembers.members[index].administrator,
+                });
+              }
+            }
+            // 교집합 멤버
+            // 이벤트는 작성했지만 교집합이 아닌 멤버
+            // 당일 이벤트를 작성하지 않은 멤버
             intersectionJson.push({
               startTime: moment
                 .tz(events[0].startTime, timezone)
@@ -173,10 +257,12 @@ const getIntersectionEventsByDay = async (req, res, next) => {
               endTime: moment
                 .tz(events[0].startTime, timezone)
                 .add(timeDivIndex * divMinute, "minutes"),
-              members: intersectionMembers.slice(0, i + 1).filter((data) => {
-                return data !== "";
-              }), // 멤버 배열 공백 제거
-              depth: currentDiv - intersectionStart[i],
+              members: {
+                intersection: interMembersArray,
+                noIntersection: registeredMembersArray,
+                noEvent: calendarAllMembers,
+              },
+              depth: timeDivIndex - intersectionStart[i],
             });
             currentDiv = intersectionStart[i];
           }
@@ -200,7 +286,6 @@ const getIntersectionEventsByDay = async (req, res, next) => {
       }
     }
   }
-  console.log(intersectionStart);
   console.log(intersectionJson);
 
   res.status(201).json({ events: intersectionJson });

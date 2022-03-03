@@ -5,16 +5,90 @@ const jwt = require("jsonwebtoken");
 const { cookieSplit } = require("../util/cookie-spliter");
 
 const Event = require("../models/event-model");
+const Calendar = require("../models/calendar-model");
+const User = require("../models/user-model");
+
+afterAll(async () => {
+  const collections = mongoose.connection.collections;
+  for (const key in collections) {
+    const collection = collections[key];
+    await collection.deleteMany();
+  }
+  await mongoose.connection.close();
+});
 
 beforeAll(async () => {
   await mongoose.connect(process.env.DB_URI_TEST, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   });
-  const userId = new mongoose.Types.ObjectId();
-  const userId2 = new mongoose.Types.ObjectId();
-  const userId3 = new mongoose.Types.ObjectId();
+
+  const userId = new mongoose.Types.ObjectId("5cabe64dcf0d4447fa60f5e9");
+  const userId2 = new mongoose.Types.ObjectId("5cabe64dcf0d4447fa60f5e8");
+  const userId3 = new mongoose.Types.ObjectId("5cabe64dcf0d4447fa60f5e7");
+  const userId4 = new mongoose.Types.ObjectId("5cabe64dcf0d4447fa60f5e6");
   const calendarId = new mongoose.Types.ObjectId("5cabe64dcf0d4447fa60f5e2");
+
+  await User.insertMany([
+    {
+      _id: userId,
+      username: "user1",
+      email: "hhh1@hhh.com",
+      password: "123123",
+      image: "helpme1",
+      calendars: [calendarId],
+    },
+    {
+      _id: userId2,
+      username: "user2",
+      email: "hhh2@hhh.com",
+      password: "123123",
+      image: "helpme2",
+      calendars: [calendarId],
+    },
+    {
+      _id: userId3,
+      username: "user3",
+      email: "hhh3@hhh.com",
+      password: "123123",
+      image: "helpme3",
+      calendars: [calendarId],
+    },
+    {
+      _id: userId4,
+      username: "user4",
+      email: "hhh4@hhh.com",
+      password: "123123",
+      image: "helpme4",
+      calendars: [calendarId],
+    },
+  ])
+    .then(function () {
+      console.log("Calendar Data inserted"); // Success
+    })
+    .catch(function (error) {
+      console.log(error); // Failure
+    });
+
+  await Calendar.insertMany([
+    {
+      _id: calendarId,
+      name: "calendar 1",
+      members: [
+        { _id: userId, nickname: "he1", role: "nin", administrator: false },
+        { _id: userId2, nickname: "he2", role: "whm", administrator: false },
+        { _id: userId3, nickname: "he3", role: "mch", administrator: true },
+        { _id: userId4, nickname: "he4", role: "war", administrator: false },
+      ],
+      creator: userId3,
+    },
+  ])
+    .then(function () {
+      console.log("Calendar Data inserted"); // Success
+    })
+    .catch(function (error) {
+      console.log(error); // Failure
+    });
 
   await Event.insertMany([
     {
@@ -40,7 +114,7 @@ beforeAll(async () => {
     },
   ])
     .then(function () {
-      console.log("Data inserted"); // Success
+      console.log("Event Data inserted"); // Success
     })
     .catch(function (error) {
       console.log(error); // Failure
@@ -48,15 +122,6 @@ beforeAll(async () => {
 });
 
 //afterEach((done) => {});
-
-afterAll(async () => {
-  const collections = mongoose.connection.collections;
-  for (const key in collections) {
-    const collection = collections[key];
-    await collection.deleteMany();
-  }
-  await mongoose.connection.close();
-});
 
 const app = createServer();
 
@@ -77,9 +142,30 @@ describe("GET /api/events/calendar/:calendarId/:date/:timezone", () => {
       .get(url)
       .then(async (res) => {
         expect(res.statusCode).toBe(201);
-        expect(res.body.events).toBe(
-          "Invalid input passed, please check your data."
-        );
+        expect(res.body.events).toStrictEqual([
+          {
+            depth: 3,
+            endTime: "2022-01-22T12:45:00.000Z",
+            members: [
+              "5cabe64dcf0d4447fa60f5e9",
+              "5cabe64dcf0d4447fa60f5e8",
+              "5cabe64dcf0d4447fa60f5e7",
+            ],
+            startTime: "2022-01-22T12:00:00.000Z",
+          },
+          {
+            depth: 7,
+            endTime: "2022-01-22T12:45:00.000Z",
+            members: ["5cabe64dcf0d4447fa60f5e9", "5cabe64dcf0d4447fa60f5e8"],
+            startTime: "2022-01-22T11:00:00.000Z",
+          },
+          {
+            depth: 15,
+            endTime: "2022-01-22T15:45:00.000Z",
+            members: ["5cabe64dcf0d4447fa60f5e8", "5cabe64dcf0d4447fa60f5e7"],
+            startTime: "2022-01-22T12:00:00.000Z",
+          },
+        ]);
       });
   });
 });

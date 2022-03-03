@@ -8,6 +8,14 @@ const User = require("../models/user-model");
 
 // exception은 어떻게 발생시키는거지..??
 //beforeEach((done) => {});
+afterAll(async () => {
+  const collections = mongoose.connection.collections;
+  for (const key in collections) {
+    const collection = collections[key];
+    await collection.deleteMany();
+  }
+  await mongoose.connection.close();
+});
 
 beforeAll(async () => {
   await mongoose.connect(process.env.DB_URI_TEST, {
@@ -17,15 +25,6 @@ beforeAll(async () => {
 });
 
 //afterEach((done) => {});
-
-afterAll(async () => {
-  const collections = mongoose.connection.collections;
-  for (const key in collections) {
-    const collection = collections[key];
-    await collection.deleteMany();
-  }
-  await mongoose.connection.close();
-});
 
 // afterAll(async () => {
 //   await new Promise((resolve) =>
