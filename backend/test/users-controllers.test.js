@@ -21,7 +21,7 @@ beforeAll(async () => {
   await mongoose.connect(process.env.DB_URI_TEST, {
     useNewUrlParser: true,
     useUnifiedTopology: true,
-  });
+  }, {});
 });
 
 //afterEach((done) => {});

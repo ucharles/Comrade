@@ -18,10 +18,14 @@ afterAll(async () => {
 });
 
 beforeAll(async () => {
-  await mongoose.connect(process.env.DB_URI_TEST, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  });
+  await mongoose.connect(
+    process.env.DB_URI_TEST,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    },
+    {}
+  );
 
   const userId = new mongoose.Types.ObjectId("5cabe64dcf0d4447fa60f5e9");
   const userId2 = new mongoose.Types.ObjectId("5cabe64dcf0d4447fa60f5e8");
@@ -112,6 +116,27 @@ beforeAll(async () => {
       creator: userId3,
       calendar: calendarId,
     },
+    {
+      title: "123",
+      startTime: "2022-01-23T11:00:00.000+00:00",
+      endTime: "2022-01-23T13:00:00.000+00:00",
+      creator: userId,
+      calendar: calendarId,
+    },
+    {
+      title: "123",
+      startTime: "2022-01-23T11:00:00.000+00:00",
+      endTime: "2022-01-23T16:15:00.000+00:00",
+      creator: userId2,
+      calendar: calendarId,
+    },
+    {
+      title: "123",
+      startTime: "2022-01-23T12:00:00.000+00:00",
+      endTime: "2022-01-23T16:00:00.000+00:00",
+      creator: userId3,
+      calendar: calendarId,
+    },
   ])
     .then(function () {
       console.log("Event Data inserted"); // Success
@@ -125,10 +150,10 @@ beforeAll(async () => {
 
 const app = createServer();
 
-describe("GET /api/events/calendar/:calendarId/:date/:timezone", () => {
+describe("GET /api/events/calendar/:calendarId/date/:date/:timezone", () => {
   test("schedule test", async () => {
     const url =
-      `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/2022-01-22/` +
+      `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/date/2022-01-22/` +
       encodeURIComponent("Asia/Seoul");
 
     // Event.find({}, function (err, docs) {
@@ -146,24 +171,207 @@ describe("GET /api/events/calendar/:calendarId/:date/:timezone", () => {
           {
             depth: 3,
             endTime: "2022-01-22T12:45:00.000Z",
-            members: [
-              "5cabe64dcf0d4447fa60f5e9",
-              "5cabe64dcf0d4447fa60f5e8",
-              "5cabe64dcf0d4447fa60f5e7",
-            ],
+            members: {
+              intersection: [
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e9",
+                  administrator: false,
+                  image: "helpme1",
+                  nickname: "he1",
+                },
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e8",
+                  administrator: false,
+                  image: "helpme2",
+                  nickname: "he2",
+                },
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e7",
+                  administrator: true,
+                  image: "helpme3",
+                  nickname: "he3",
+                },
+              ],
+              noEvent: [
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e6",
+                  administrator: false,
+                  image: "helpme4",
+                  nickname: "he4",
+                },
+              ],
+              noIntersection: [],
+            },
             startTime: "2022-01-22T12:00:00.000Z",
           },
           {
             depth: 7,
             endTime: "2022-01-22T12:45:00.000Z",
-            members: ["5cabe64dcf0d4447fa60f5e9", "5cabe64dcf0d4447fa60f5e8"],
+            members: {
+              intersection: [
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e9",
+                  administrator: false,
+                  image: "helpme1",
+                  nickname: "he1",
+                },
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e8",
+                  administrator: false,
+                  image: "helpme2",
+                  nickname: "he2",
+                },
+              ],
+              noEvent: [
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e6",
+                  administrator: false,
+                  image: "helpme4",
+                  nickname: "he4",
+                },
+              ],
+              noIntersection: [
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e7",
+                  administrator: true,
+                  image: "helpme3",
+                  nickname: "he3",
+                },
+              ],
+            },
             startTime: "2022-01-22T11:00:00.000Z",
           },
           {
             depth: 15,
             endTime: "2022-01-22T15:45:00.000Z",
-            members: ["5cabe64dcf0d4447fa60f5e8", "5cabe64dcf0d4447fa60f5e7"],
+            members: {
+              intersection: [
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e8",
+                  administrator: false,
+                  image: "helpme2",
+                  nickname: "he2",
+                },
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e7",
+                  administrator: true,
+                  image: "helpme3",
+                  nickname: "he3",
+                },
+              ],
+              noEvent: [
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e6",
+                  administrator: false,
+                  image: "helpme4",
+                  nickname: "he4",
+                },
+              ],
+              noIntersection: [
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e9",
+                  administrator: false,
+                  image: "helpme1",
+                  nickname: "he1",
+                },
+              ],
+            },
             startTime: "2022-01-22T12:00:00.000Z",
+          },
+        ]);
+      });
+  });
+});
+
+describe("GET /api/events/calendar/:calendarId/month/:/:timezone", () => {
+  test("schedule test", async () => {
+    const url =
+      `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/month/2022-01/` +
+      encodeURIComponent("Asia/Seoul");
+
+    // Event.find({}, function (err, docs) {
+    //   if (err) throw err;
+    //   console.log(JSON.stringify(docs));
+    //   // or:
+    //   console.log("%s", docs);
+    // }).exec();
+
+    await request(app)
+      .get(url)
+      .then(async (res) => {
+        expect(res.statusCode).toBe(201);
+        expect(res.body.events).toStrictEqual([
+          {
+            depth: 3,
+            endTime: "2022-01-22T12:45:00.000Z",
+            members: {
+              intersection: [
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e9",
+                  administrator: false,
+                  image: "helpme1",
+                  nickname: "he1",
+                },
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e8",
+                  administrator: false,
+                  image: "helpme2",
+                  nickname: "he2",
+                },
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e7",
+                  administrator: true,
+                  image: "helpme3",
+                  nickname: "he3",
+                },
+              ],
+              noEvent: [
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e6",
+                  administrator: false,
+                  image: "helpme4",
+                  nickname: "he4",
+                },
+              ],
+              noIntersection: [],
+            },
+            startTime: "2022-01-22T12:00:00.000Z",
+          },
+          {
+            depth: 3,
+            endTime: "2022-01-23T12:45:00.000Z",
+            members: {
+              intersection: [
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e9",
+                  administrator: false,
+                  image: "helpme1",
+                  nickname: "he1",
+                },
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e8",
+                  administrator: false,
+                  image: "helpme2",
+                  nickname: "he2",
+                },
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e7",
+                  administrator: true,
+                  image: "helpme3",
+                  nickname: "he3",
+                },
+              ],
+              noEvent: [
+                {
+                  _id: "5cabe64dcf0d4447fa60f5e6",
+                  administrator: false,
+                  image: "helpme4",
+                  nickname: "he4",
+                },
+              ],
+              noIntersection: [],
+            },
+            startTime: "2022-01-23T12:00:00.000Z",
           },
         ]);
       });
