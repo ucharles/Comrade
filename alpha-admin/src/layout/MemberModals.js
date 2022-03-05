@@ -45,10 +45,8 @@ for (num = 0; num < members.length; num++) {
   });
 }
 
-{
-  /* 멤버 관리 모달 (캘린더 관리자에게만 보일 것)*/
-}
-export const EditMemModal = (props) => {
+/* 멤버 관리 모달 (캘린더 관리자에게만 보일 것)*/
+export const EditMemberModal = (props) => {
   const [selectionModel, setSeletionModel] = useState([]);
   const deleteHandler = () => {
     alert("Are you sure you want to delete members");
@@ -115,7 +113,7 @@ export const EditMemModal = (props) => {
   );
 };
 
-export const AddMemModal = (props) => {
+export const AddMemberModal = (props) => {
   return (
     <Modal
       open={props.open}
@@ -164,5 +162,3 @@ export const AddMemModal = (props) => {
     </Modal>
   );
 };
-
-export default EditMemModal;

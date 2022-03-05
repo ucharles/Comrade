@@ -12,7 +12,7 @@ import interactionPlugin from "@fullcalendar/interaction"; // needed for dayClic
 import Grid from "@mui/material/Grid";
 import "./Dashboard.css";
 
-import { AddMemModal, EditMemModal } from "./Modals";
+import { AddMemberModal, EditMemberModal } from "./MemberModals";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -49,14 +49,14 @@ export const Dashboard = () => {
   ];
 
   // 멤버 추가 모달 State
-  const [addMemOpen, setAddMemOpen] = useState(false);
-  const addMemModalOpen = () => setAddMemOpen(true);
-  const addMemModalClose = () => setAddMemOpen(false);
+  const [addMemberOpen, setAddMemberOpen] = useState(false);
+  const addMemberModalOpen = () => setAddMemberOpen(true);
+  const addMemberModalClose = () => setAddMemberOpen(false);
 
   // 멤버 관리 모달 State
-  const [editMemOpen, setEditMemOpen] = useState(false);
-  const editMemModalOpen = () => setEditMemOpen(true);
-  const editMemModalClose = () => setEditMemOpen(false);
+  const [editMemberOpen, setEditMemberOpen] = useState(false);
+  const editMemberModalOpen = () => setEditMemberOpen(true);
+  const editMemberModalClose = () => setEditMemberOpen(false);
 
   return (
     <React.Fragment>
@@ -107,19 +107,24 @@ export const Dashboard = () => {
               <Typography variant="h6" component="h2" sx={{ ml: 0.5, mt: 0.4 }}>
                 Members (n)
               </Typography>
-              {/* 멤버 관리 모달 (캘린더 관리자에게만 보일 것)*/}
-              <IconButton
-                sx={{ marginLeft: "auto", mr: 0.5 }}
-                onClick={editMemModalOpen}
-              >
-                <EditIcon />
-              </IconButton>
-              <EditMemModal open={editMemOpen} close={editMemModalClose} />
-              {/* 멤버 추가 모달 */}
-              <IconButton sx={{ marginX: 1 }} onClick={addMemModalOpen}>
-                <AddIcon />
-              </IconButton>
-              <AddMemModal open={addMemOpen} close={addMemModalClose} />
+              <Box className={classes.buttonBox}>
+                {/* 멤버 관리 모달 (캘린더 관리자에게만 보일 것)*/}
+                <IconButton sx={{ marginX: 1 }} onClick={editMemberModalOpen}>
+                  <EditIcon />
+                </IconButton>
+                <EditMemberModal
+                  open={editMemberOpen}
+                  close={editMemberModalClose}
+                />
+                {/* 멤버 추가 모달 */}
+                <IconButton sx={{ marginX: 1 }} onClick={addMemberModalOpen}>
+                  <AddIcon />
+                </IconButton>
+                <AddMemberModal
+                  open={addMemberOpen}
+                  close={addMemberModalClose}
+                />
+              </Box>
             </Box>
             <Box sx={{ mb: 2, display: "flex" }}>
               <Avatar sx={{ mt: 0.5, mr: 2 }}></Avatar>
