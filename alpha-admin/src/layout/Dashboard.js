@@ -1,17 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { Title } from "react-admin";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  Avatar,
-  Box,
-  Container,
-  Paper,
-  Typography,
-} from "@mui/material";
+import { Avatar, Box, Paper, Typography } from "@mui/material";
 import { makeStyles } from "@mui/styles";
-import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -21,6 +11,8 @@ import dayGridPlugin from "@fullcalendar/daygrid"; // a plugin!
 import interactionPlugin from "@fullcalendar/interaction"; // needed for dayClick
 import Grid from "@mui/material/Grid";
 import "./Dashboard.css";
+
+import { AddMemberModal, EditMemberModal } from "./MemberModals";
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -55,6 +47,17 @@ export const Dashboard = () => {
       resourceId: 1,
     },
   ];
+
+  // 멤버 추가 모달 State
+  const [addMemberOpen, setAddMemberOpen] = useState(false);
+  const addMemberModalOpen = () => setAddMemberOpen(true);
+  const addMemberModalClose = () => setAddMemberOpen(false);
+
+  // 멤버 관리 모달 State
+  const [editMemberOpen, setEditMemberOpen] = useState(false);
+  const editMemberModalOpen = () => setEditMemberOpen(true);
+  const editMemberModalClose = () => setEditMemberOpen(false);
+
   return (
     <React.Fragment>
       <Grid container spacing={1} sx={{ width: "100%" }}>
@@ -74,13 +77,15 @@ export const Dashboard = () => {
                 <IconButton
                   className={classes.button}
                   href="#/calendar/edit"
-                  variant="contained">
+                  variant="contained"
+                >
                   <EditIcon />
                 </IconButton>
                 <IconButton
                   className={classes.button}
                   href="#/calendar/event"
-                  variant="contained">
+                  variant="contained"
+                >
                   <AddIcon />
                 </IconButton>
               </Box>
@@ -102,10 +107,24 @@ export const Dashboard = () => {
               <Typography variant="h6" component="h2" sx={{ ml: 0.5, mt: 0.4 }}>
                 Members (n)
               </Typography>
-
-              <IconButton sx={{ marginLeft: "auto", mr: 0.5 }}>
-                <AddIcon />
-              </IconButton>
+              <Box className={classes.buttonBox}>
+                {/* 멤버 관리 모달 (캘린더 관리자에게만 보일 것)*/}
+                <IconButton sx={{ marginX: 1 }} onClick={editMemberModalOpen}>
+                  <EditIcon />
+                </IconButton>
+                <EditMemberModal
+                  open={editMemberOpen}
+                  close={editMemberModalClose}
+                />
+                {/* 멤버 추가 모달 */}
+                <IconButton sx={{ marginX: 1 }} onClick={addMemberModalOpen}>
+                  <AddIcon />
+                </IconButton>
+                <AddMemberModal
+                  open={addMemberOpen}
+                  close={addMemberModalClose}
+                />
+              </Box>
             </Box>
             <Box sx={{ mb: 2, display: "flex" }}>
               <Avatar sx={{ mt: 0.5, mr: 2 }}></Avatar>
