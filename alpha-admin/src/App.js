@@ -13,7 +13,7 @@ import CreateCalendar from "./calendars/pages/CreateCalendar";
 import AddEvents from "./calendars/pages/AddEvents";
 import EditEvents from "./calendars/pages/EditEvents";
 import JoinCalendar from "./calendars/pages/JoinCalendar";
-// import EditCalendars from "./calendars/pages/EditCalendars";
+import EditCalendars from "./calendars/pages/EditCalendars";
 
 import jsonServerProvider from "ra-data-json-server";
 import UserSetting from "./users/pages/UserSetting";
@@ -36,7 +36,7 @@ const App = () => (
       <Route exact path="/calendar/:id/:date" element={<SignUp />} />
       <Route exact path="/settings" element={<UserSetting />} />
       <Route exact path="/calendar/join" element={<JoinCalendar />} />
-      {/* <Route exact path="/calendar/settings" element={<EditCalendars />} /> */}
+      <Route exact path="/calendar/settings" element={<EditCalendars />} />
     </CustomRoutes>
     <CustomRoutes noLayout>
       <Route exact path="/signup" element={<SignUp />} />
