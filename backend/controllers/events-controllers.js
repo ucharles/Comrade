@@ -1,4 +1,5 @@
 const moment = require("moment-timezone");
+const { v4: uuid } = require("uuid");
 
 const HttpError = require("../models/http-error");
 const { validationResult } = require("express-validator");
@@ -135,6 +136,12 @@ const generateIntersectionEventsByDay = (
               index++
             ) {
               // 교집합이 있는 경우. id는 객체(object)이므로 string 으로 변환 후 비교
+              let insertObject = {
+                id: calendarMembers.members[index]._id._id,
+                image: calendarMembers.members[index]._id.image,
+                nickname: calendarMembers.members[index].nickname,
+                administrator: calendarMembers.members[index].administrator,
+              };
               if (
                 typeof interMembers.find(
                   (v) =>
@@ -142,12 +149,7 @@ const generateIntersectionEventsByDay = (
                     calendarMembers.members[index]._id._id.toString()
                 ) !== "undefined"
               ) {
-                interMembersArray.push({
-                  _id: calendarMembers.members[index]._id._id,
-                  image: calendarMembers.members[index]._id.image,
-                  nickname: calendarMembers.members[index].nickname,
-                  administrator: calendarMembers.members[index].administrator,
-                });
+                interMembersArray.push(insertObject);
               }
               // 이벤트는 등록했지만 교집합이 없는 경우
               else if (
@@ -157,29 +159,20 @@ const generateIntersectionEventsByDay = (
                     calendarMembers.members[index]._id._id.toString()
                 ) !== "undefined"
               ) {
-                registeredMembersArray.push({
-                  _id: calendarMembers.members[index]._id._id,
-                  image: calendarMembers.members[index]._id.image,
-                  nickname: calendarMembers.members[index].nickname,
-                  administrator: calendarMembers.members[index].administrator,
-                });
+                registeredMembersArray.push(insertObject);
               }
               // 이벤트를 등록하지 않은 경우
               else {
-                calendarAllMembers.push({
-                  _id: calendarMembers.members[index]._id._id,
-                  image: calendarMembers.members[index]._id.image,
-                  nickname: calendarMembers.members[index].nickname,
-                  administrator: calendarMembers.members[index].administrator,
-                });
+                calendarAllMembers.push(insertObject);
               }
             }
             // 교집합 정보 작성
             intersectionJson.push({
-              startTime: moment
+              id: uuid(),
+              start: moment
                 .tz(events[0].startTime, timezone)
                 .add(intersectionStart[i] * divMinute, "minutes"),
-              endTime: moment
+              end: moment
                 .tz(events[0].startTime, timezone)
                 .add(timeDivIndex * divMinute, "minutes"),
               members: {

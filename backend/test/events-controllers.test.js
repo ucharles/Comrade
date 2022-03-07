@@ -174,19 +174,19 @@ describe("GET /api/events/calendar/:calendarId/date/:date/:timezone", () => {
             members: {
               intersection: [
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e9",
+                  id: "5cabe64dcf0d4447fa60f5e9",
                   administrator: false,
                   image: "helpme1",
                   nickname: "he1",
                 },
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e8",
+                  id: "5cabe64dcf0d4447fa60f5e8",
                   administrator: false,
                   image: "helpme2",
                   nickname: "he2",
                 },
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e7",
+                  id: "5cabe64dcf0d4447fa60f5e7",
                   administrator: true,
                   image: "helpme3",
                   nickname: "he3",
@@ -194,7 +194,7 @@ describe("GET /api/events/calendar/:calendarId/date/:date/:timezone", () => {
               ],
               noEvent: [
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e6",
+                  id: "5cabe64dcf0d4447fa60f5e6",
                   administrator: false,
                   image: "helpme4",
                   nickname: "he4",
@@ -203,6 +203,7 @@ describe("GET /api/events/calendar/:calendarId/date/:date/:timezone", () => {
               noIntersection: [],
             },
             startTime: "2022-01-22T12:00:00.000Z",
+            id: "*",
           },
           {
             depth: 7,
@@ -210,13 +211,13 @@ describe("GET /api/events/calendar/:calendarId/date/:date/:timezone", () => {
             members: {
               intersection: [
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e9",
+                  id: "5cabe64dcf0d4447fa60f5e9",
                   administrator: false,
                   image: "helpme1",
                   nickname: "he1",
                 },
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e8",
+                  id: "5cabe64dcf0d4447fa60f5e8",
                   administrator: false,
                   image: "helpme2",
                   nickname: "he2",
@@ -224,7 +225,7 @@ describe("GET /api/events/calendar/:calendarId/date/:date/:timezone", () => {
               ],
               noEvent: [
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e6",
+                  id: "5cabe64dcf0d4447fa60f5e6",
                   administrator: false,
                   image: "helpme4",
                   nickname: "he4",
@@ -232,7 +233,7 @@ describe("GET /api/events/calendar/:calendarId/date/:date/:timezone", () => {
               ],
               noIntersection: [
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e7",
+                  id: "5cabe64dcf0d4447fa60f5e7",
                   administrator: true,
                   image: "helpme3",
                   nickname: "he3",
@@ -247,13 +248,13 @@ describe("GET /api/events/calendar/:calendarId/date/:date/:timezone", () => {
             members: {
               intersection: [
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e8",
+                  id: "5cabe64dcf0d4447fa60f5e8",
                   administrator: false,
                   image: "helpme2",
                   nickname: "he2",
                 },
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e7",
+                  id: "5cabe64dcf0d4447fa60f5e7",
                   administrator: true,
                   image: "helpme3",
                   nickname: "he3",
@@ -261,7 +262,7 @@ describe("GET /api/events/calendar/:calendarId/date/:date/:timezone", () => {
               ],
               noEvent: [
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e6",
+                  id: "5cabe64dcf0d4447fa60f5e6",
                   administrator: false,
                   image: "helpme4",
                   nickname: "he4",
@@ -269,7 +270,7 @@ describe("GET /api/events/calendar/:calendarId/date/:date/:timezone", () => {
               ],
               noIntersection: [
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e9",
+                  id: "5cabe64dcf0d4447fa60f5e9",
                   administrator: false,
                   image: "helpme1",
                   nickname: "he1",
@@ -307,19 +308,19 @@ describe("GET /api/events/calendar/:calendarId/month/:/:timezone", () => {
             members: {
               intersection: [
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e9",
+                  id: "5cabe64dcf0d4447fa60f5e9",
                   administrator: false,
                   image: "helpme1",
                   nickname: "he1",
                 },
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e8",
+                  id: "5cabe64dcf0d4447fa60f5e8",
                   administrator: false,
                   image: "helpme2",
                   nickname: "he2",
                 },
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e7",
+                  id: "5cabe64dcf0d4447fa60f5e7",
                   administrator: true,
                   image: "helpme3",
                   nickname: "he3",
@@ -327,7 +328,7 @@ describe("GET /api/events/calendar/:calendarId/month/:/:timezone", () => {
               ],
               noEvent: [
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e6",
+                  id: "5cabe64dcf0d4447fa60f5e6",
                   administrator: false,
                   image: "helpme4",
                   nickname: "he4",
@@ -343,19 +344,19 @@ describe("GET /api/events/calendar/:calendarId/month/:/:timezone", () => {
             members: {
               intersection: [
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e9",
+                  id: "5cabe64dcf0d4447fa60f5e9",
                   administrator: false,
                   image: "helpme1",
                   nickname: "he1",
                 },
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e8",
+                  id: "5cabe64dcf0d4447fa60f5e8",
                   administrator: false,
                   image: "helpme2",
                   nickname: "he2",
                 },
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e7",
+                  id: "5cabe64dcf0d4447fa60f5e7",
                   administrator: true,
                   image: "helpme3",
                   nickname: "he3",
@@ -363,7 +364,7 @@ describe("GET /api/events/calendar/:calendarId/month/:/:timezone", () => {
               ],
               noEvent: [
                 {
-                  _id: "5cabe64dcf0d4447fa60f5e6",
+                  id: "5cabe64dcf0d4447fa60f5e6",
                   administrator: false,
                   image: "helpme4",
                   nickname: "he4",
