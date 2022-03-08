@@ -18,10 +18,14 @@ afterAll(async () => {
 });
 
 beforeAll(async () => {
-  await mongoose.connect(process.env.DB_URI_TEST, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  }, {});
+  await mongoose.connect(
+    process.env.DB_URI_TEST,
+    {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    },
+    {}
+  );
 });
 
 //afterEach((done) => {});
@@ -45,7 +49,6 @@ describe("POST /api/users/signup", () => {
       email: "test@test.com",
       password: "123456",
       confirmPassword: "123456",
-      region: "asia/seoul",
     };
 
     await request(app)
@@ -64,7 +67,6 @@ describe("POST /api/users/signup", () => {
       email: "test@testcom",
       password: "123456",
       confirmPassword: "123456",
-      region: "asia/seoul",
     };
 
     await request(app)
@@ -83,7 +85,6 @@ describe("POST /api/users/signup", () => {
       email: "test@test.com",
       password: "12345",
       confirmPassword: "123456",
-      region: "asia/seoul",
     };
 
     await request(app)
@@ -102,27 +103,6 @@ describe("POST /api/users/signup", () => {
       email: "test@test.com",
       password: "123456",
       confirmPassword: "12345",
-      region: "asia/seoul",
-    };
-
-    await request(app)
-      .post(url)
-      .send(userData)
-      .then(async (res) => {
-        expect(res.statusCode).toBe(422);
-        expect(res.body.message).toBe(
-          "Invalid input passed, please check your data."
-        );
-      });
-  });
-
-  test("express-validator, region is not empty", async () => {
-    const userData = {
-      username: "helloWorld",
-      email: "test@test.com",
-      password: "123456",
-      confirmPassword: "123456",
-      region: "",
     };
 
     await request(app)
@@ -142,7 +122,6 @@ describe("POST /api/users/signup", () => {
       email: "test@test.com",
       password: "123456",
       confirmPassword: "123456",
-      region: "asia/seoul",
     });
 
     const userData = {
@@ -150,7 +129,6 @@ describe("POST /api/users/signup", () => {
       email: "test@test.com",
       password: "1234567",
       confirmPassword: "1234567",
-      region: "asia/japan",
     };
 
     await request(app)
@@ -170,7 +148,6 @@ describe("POST /api/users/signup", () => {
       email: "test1@test.com",
       password: "123456",
       confirmPassword: "1234567",
-      region: "asia/seoul",
     };
 
     await request(app)
@@ -183,30 +160,12 @@ describe("POST /api/users/signup", () => {
         );
       });
   });
-  test("Enum Timezone", async () => {
-    const userData = {
-      username: "helloWorld",
-      email: "test1@test.com",
-      password: "123456",
-      confirmPassword: "123456",
-      region: "a",
-    };
-
-    await request(app)
-      .post(url)
-      .send(userData)
-      .then(async (res) => {
-        expect(res.statusCode).toBe(422);
-        expect(res.body.message).toBe("Invalid timezone.");
-      });
-  });
   test("Response is JWT Token in Cookie, ALL CLEAR", async () => {
     const userData = {
       username: "helloWorld",
       email: "test1@test.com",
       password: "123456",
       confirmPassword: "123456",
-      region: "Asia/Seoul",
     };
 
     await request(app)
@@ -219,8 +178,7 @@ describe("POST /api/users/signup", () => {
         const decodedToken = jwt.verify(token, process.env.JWT_PRIVATE_KEY);
         expect({
           email: decodedToken.email,
-          region: decodedToken.region,
-        }).toEqual({ email: userData.email, region: userData.region });
+        }).toEqual({ email: userData.email });
       });
   });
 });

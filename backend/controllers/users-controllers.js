@@ -35,7 +35,7 @@ const signup = async (req, res, next) => {
     );
   }
 
-  const { username, email, password, confirmPassword, region } = req.body;
+  const { username, email, password, confirmPassword } = req.body;
 
   let existingUser;
   try {
@@ -58,11 +58,6 @@ const signup = async (req, res, next) => {
       "Password unmatch. Please confirm password.",
       422
     );
-    return next(error);
-  }
-
-  if (!timezoneEnum[region]) {
-    const error = new HttpError("Invalid timezone.", 422);
     return next(error);
   }
 
@@ -90,7 +85,6 @@ const signup = async (req, res, next) => {
     email,
     image: image,
     password: hashedPassword,
-    region,
     calendars: [],
   });
 
@@ -106,8 +100,6 @@ const signup = async (req, res, next) => {
     token = jwt.sign(
       {
         userId: createdUser.id,
-        email: createdUser.email,
-        region: region,
       },
       JWT_PRIVATE_KEY,
       { expiresIn: JWT_EXPIRES }
@@ -181,8 +173,8 @@ const login = async (req, res, next) => {
     token = jwt.sign(
       {
         userId: existingUser.id,
-        email: existingUser.email,
-        region: existingUser.region,
+        //email: existingUser.email,
+        //region: existingUser.region,
       },
       JWT_PRIVATE_KEY,
       { expiresIn: JWT_EXPIRES }
@@ -243,7 +235,7 @@ const editUser = async (req, res, next) => {
       new HttpError("Invalid inputs passed, please check your data.", 422)
     );
   }
-  const { username, password, region } = req.body;
+  const { username, password } = req.body;
   const userId = req.params.id;
 
   let user;
@@ -284,7 +276,6 @@ const editUser = async (req, res, next) => {
   }
 
   user.username = username;
-  user.region = region;
   user.image = image;
 
   try {
@@ -302,8 +293,6 @@ const editUser = async (req, res, next) => {
     token = jwt.sign(
       {
         userId: user.id,
-        email: user.email,
-        region: user.region,
       },
       JWT_PRIVATE_KEY,
       { expiresIn: JWT_EXPIRES }

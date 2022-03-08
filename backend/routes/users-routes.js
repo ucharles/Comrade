@@ -33,7 +33,6 @@ router.post(
     check("email").normalizeEmail().isEmail(),
     check("password").trim().isLength({ min: 6 }),
     check("confirmPassword").trim().isLength({ min: 6 }),
-    check("region").trim().not().isEmpty(),
   ], // express validator
   usersControllers.signup
 );
@@ -52,7 +51,6 @@ router.patch(
       .optional({ nullable: true })
       .trim()
       .isLength({ min: 6 }),
-    check("region").trim().not().isEmpty(),
   ], // express validator
   usersControllers.editUser
 );
