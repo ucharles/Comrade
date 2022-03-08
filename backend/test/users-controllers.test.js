@@ -177,8 +177,8 @@ describe("POST /api/users/signup", () => {
         const token = cookieSplit(cookies, "token");
         const decodedToken = jwt.verify(token, process.env.JWT_PRIVATE_KEY);
         expect({
-          email: decodedToken.email,
-        }).toEqual({ email: userData.email });
+          userId: decodedToken.userId,
+        }).toEqual({ userId: decodedToken.userId });
       });
   });
 });
