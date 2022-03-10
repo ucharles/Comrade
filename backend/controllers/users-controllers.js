@@ -1,4 +1,4 @@
-const HttpError = require("../models/http-error");
+const HttpError = require("../util/http-error");
 const { validationResult } = require("express-validator");
 
 const jwt = require("jsonwebtoken");
@@ -328,9 +328,16 @@ const deleteUser = async (req, res, next) => {
     const error = new HttpError("Could not find user for this id.", 404);
     return next(error);
   }
-
-  if (user.calendars !== 0) {
-    const error = new HttpError("Delete created calendar first.", 404);
+  // 속한 캘린더 중에 생성자가 자신인 캘린더가 있는 경우
+  if (
+    user.calendars.find((v) => {
+      v.owner === userId;
+    }) !== "undefined"
+  ) {
+    const error = new HttpError(
+      "Delete or Change owner, by owned calendar first.",
+      404
+    );
     return next(error);
   }
 
