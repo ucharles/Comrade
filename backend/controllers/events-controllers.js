@@ -1,7 +1,7 @@
 const moment = require("moment-timezone");
 const { v4: uuid } = require("uuid");
 
-const HttpError = require("../models/http-error");
+const HttpError = require("../util/http-error");
 const { validationResult } = require("express-validator");
 
 const Event = require("../models/event-model");
@@ -204,7 +204,11 @@ const generateIntersectionEventsByDay = (
       }
     }
   }
-  return intersectionJson;
+  return intersectionJson.sort(function (a, b) {
+    const membersA = a.members.intersection.length;
+    const membersB = b.members.intersection.length;
+    return membersB - membersA || b.depth - a.depth;
+  });
 };
 
 const getEvents = async (req, res, next) => {
@@ -334,7 +338,7 @@ const getIntersectionEventsByDay = async (req, res, next) => {
   );
   console.log(intersectionJson);
 
-  res.status(201).json({ events: intersectionJson });
+  res.status(201).json({ events: intersectionJson.slice(0, 6) });
 
   // events 변수 자체가 커서인듯...
   // https://stackoverflow.com/questions/37024829/cursor-map-toarray-vs-cursor-toarray-thenarray-array-map
@@ -490,14 +494,23 @@ const getIntersectionEventsByMonth = async (req, res, next) => {
     let largestIntersection = [];
     let maxMemberCount = 0;
     let maxDepth = 0;
+    // 최댓값 확인(멤버수, 시간 길이)
     for (let k = 0; k < intersectionByDayJson.length; k++) {
       if (
-        intersectionByDayJson[k].members.intersection.length >=
-          maxMemberCount &&
-        intersectionByDayJson[k].depth >= maxDepth
+        intersectionByDayJson[k].members.intersection.length > maxMemberCount &&
+        intersectionByDayJson[k].depth > maxDepth
       ) {
         maxMemberCount = intersectionByDayJson[k].members.intersection.length;
         maxDepth = intersectionByDayJson[k].depth;
+      }
+    }
+    // 최댓값에 해당하는 이벤트 정보 추출
+    for (let k = 0; k < intersectionByDayJson.length; k++) {
+      if (
+        intersectionByDayJson[k].members.intersection.length ===
+          maxMemberCount &&
+        intersectionByDayJson[k].depth === maxDepth
+      ) {
         largestIntersection.push(intersectionByDayJson[k]);
       }
     }
@@ -523,7 +536,8 @@ const createEvents = async (req, res, next) => {
     return next(error);
   }
 
-  const { date, startTime, endTime, timezone, timezoneOffset } = req.body;
+  const { date, startTime, endTime, timezone, calendarId, timezoneOffset } =
+    req.body;
 
   let addDay = 0;
   const startDate = moment.tz("2022-01-01" + " " + startTime, timezone);
@@ -557,20 +571,70 @@ const createEvents = async (req, res, next) => {
     return timezoneReturn;
   };
 
+  date.sort((a, b) => {
+    const dateA = moment.tz(a, timezone);
+    const dateB = moment.tz(b, timezone);
+    return dateA - dateB;
+  });
+
+  // 입력된 날짜 범위 안에 있는 모든 이벤트 추출
+  let events;
+  try {
+    events = await Event.find({
+      creator: req.userData.userId,
+      calendar: calendarId,
+      startTime: {
+        $gte: new Date(moment.tz(date[0], timezone).utc()).toISOString(),
+        $lt: new Date(
+          moment
+            .tz(date[date.length - 1], timezone)
+            .add(1, "days")
+            .utc()
+        ).toISOString(),
+      },
+    })
+      .sort({ startTime: 1, endTime: 1 })
+      .exec();
+  } catch (err) {
+    const error = new HttpError("Could not found events", 500);
+    return next(error);
+  }
+
+  let conflictTime = [];
+
   date.forEach((value, index, array) => {
     if (!regexDate.test(value)) {
       const error = new HttpError("Invalid Date value", 500);
       return next(error);
     }
-    insertEventsArray.push({
-      title:
-        addDay === 1
-          ? startTime + "~(next day)" + endTime
-          : startTime + "~" + endTime,
+    let startTime = moment.tz(value + " " + startTime, timezone);
+    let endTime = moment.tz(value + " " + endTime, timezone).add(addDay, "day");
 
-      startTime: moment.tz(value + " " + startTime, timezone),
-      endTime: moment.tz(value + " " + endTime, timezone).add(addDay, "day"),
-    });
+    // 같은 달력에 이벤트가 중복 등록된 경우, 제외 처리
+    // 중복 등록을 찾기 위한 반복문 횟수가 너무 많다. 리팩토링 필요.
+    let count = 0;
+    for (value of events) {
+      let eventStartTime = moment.tz(value.startTime, timezone);
+      let eventEndTime = moment.tz(value.endTime, timezone);
+      if (startTime >= eventStartTime && eventEndTime > startTime) {
+        conflictTime.push({
+          startTime: eventStartTime,
+          endTime: eventEndTime,
+        });
+        count++;
+      }
+    }
+    // title 은 삭제 예정
+    if (count === 0) {
+      insertEventsArray.push({
+        title:
+          addDay === 1
+            ? startTime + "~(next day)" + endTime
+            : startTime + "~" + endTime,
+        startTime,
+        endTime,
+      });
+    }
   });
 
   try {
@@ -584,7 +648,7 @@ const createEvents = async (req, res, next) => {
     return next(error);
   }
 
-  res.status(201).json({ events: insertEventsArray });
+  res.status(201).json({ events: insertEventsArray, conflict: conflictTime });
 
   // data validation
 
@@ -595,7 +659,21 @@ const createEvents = async (req, res, next) => {
   // timezoneOffset: 문자열, 참고용으로 받음
 };
 
-const deleteEvents = async (req, res, next) => {};
+const deleteEvents = async (req, res, next) => {
+  // POST 요청
+  const eventIds = req.params.events;
+
+  try {
+    await Event.deleteMany({
+      _id: { $in: eventIds },
+      creator: req.userData.userId,
+    }).exec();
+  } catch (err) {
+    const error = new HttpError("Could not delete the event.", 500);
+    return next(error);
+  }
+  res.status(200).json({ message: "Deleted events." });
+};
 
 exports.getEvents = getEvents;
 exports.createEvents = createEvents;

@@ -84,7 +84,7 @@ beforeAll(async () => {
         { _id: userId3, nickname: "he3", role: "mch", administrator: true },
         { _id: userId4, nickname: "he4", role: "war", administrator: false },
       ],
-      creator: userId3,
+      owner: userId3,
     },
   ])
     .then(function () {
@@ -284,7 +284,7 @@ describe("GET /api/events/calendar/:calendarId/date/:date/:timezone", () => {
   });
 });
 
-describe("GET /api/events/calendar/:calendarId/month/:/:timezone", () => {
+describe("GET /api/events/calendar/:calendarId/month/:month/:timezone", () => {
   test("schedule test", async () => {
     const url =
       `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/month/2022-01/` +
