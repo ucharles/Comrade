@@ -9,12 +9,12 @@ GET 요청에 Body 를 첨부하면 Backend 에서 POST 요청으로 해석합�
 
 ## users-controllers
 
-#### GET
+### GET
 
 - **/api/users**
   - 모든 유저 정보 획득. 테스트용. 삭제 예정
 
-#### POST
+### POST
 
 - **/api/users/login**
   - email, 이메일인지 체크
@@ -25,14 +25,14 @@ GET 요청에 Body 를 첨부하면 Backend 에서 POST 요청으로 해석합�
   - password, 입력 시 공백 제외 6자 이상
   - confirmPassword, 공백 제외 6자 이상, password와 같아야 함
 
-**⬇︎ Authentication required ⬇︎**
+**⬇︎ Authentication required ⬇︎**  
 cookie: token(userId)
 
-#### GET
+### GET
 
 - **/api/users/:id**
 
-#### PATCH
+### PATCH
 
 - **/api/users/:id**
 
@@ -41,7 +41,7 @@ cookie: token(userId)
   - password, null 가능, 공백 제외 6자 이상
   - confirmPassword, null 가능, 공백 제외 6자 이상, password와 같아야 함
 
-#### DELETE
+### DELETE
 
 - **/api/users/:id**
 
@@ -49,14 +49,14 @@ cookie: token(userId)
 
 ## events-controllers
 
-**⬇︎ Authentication required ⬇︎**
-cookie: token(userId)
+**⬇︎ Authentication required ⬇︎**  
+cookie: token(userId)  
 (현재는 비활성화 중, 인증 정보 없어도 접근 가능)
 
-#### GET
+### GET
 
 (timezone 을 쿠키에 넣으면 URL에 싣지 않아도 된다... 리팩토링 고려.)  
- (URL에 쿼리를 사용할까 고민중. / 로만 구분하는 건 지저분해 보이고, URL 을 구성하는 순서도 지켜야함.)
+(URL에 쿼리를 사용할까 고민중. / 로만 구분하는 건 지저분해 보이고, URL 을 구성하는 순서도 지켜야함.)
 
 - **/api/events**
   - 모든 이벤트 획득
@@ -87,7 +87,7 @@ cookie: token(userId)
   - timezone 을 설정할 때 encodeURIComponent() 사용 필요 ('/'가 들어가기 때문)
     - cookie 에 timezone을 저장할 때 인코딩 후 저장
 
-#### POST
+### POST
 
 - **/api/events**
   - body: {date, startTime, endTime, (timezone, 쿠키로 대체 가능성 있음)}
@@ -104,10 +104,10 @@ cookie: token(userId)
 
 (테스트 코드 작성 필요)
 
-**⬇︎ Authentication required ⬇︎**
+**⬇︎ Authentication required ⬇︎**  
 cookie: token(userId)
 
-#### GET
+### GET
 
 - **/api/calendar**
   - getCalendarsByUserId
@@ -117,7 +117,7 @@ cookie: token(userId)
   - cookie: token(userId)
   - :calendarId 에 대응되는 캘린더에 user 가 속해 있는지 확인함.
 
-#### POST
+### POST
 
 - **/api/calendar**
   - createCalendar
@@ -135,7 +135,7 @@ cookie: token(userId)
 
   - (미구현)
 
-#### PATCH
+### PATCH
 
 - **/api/calendar**
   - updateCalendarById
@@ -156,7 +156,7 @@ cookie: token(userId)
   - body: {userId, calendarId}
   - userId 는 Owner 로 임명될 user 의 id
 
-#### DELETE
+### DELETE
 
 - **/api/calendar/:calendarId**
   - deleteCalendar

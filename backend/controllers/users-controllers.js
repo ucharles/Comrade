@@ -117,10 +117,7 @@ const signup = async (req, res, next) => {
   //   token: token,
   // });
 
-  res
-    .status(201)
-    .cookie("token", token, { httpOnly: true })
-    .send("Cookie Shipped");
+  res.status(201).send("Registration Complete.");
 };
 
 const login = async (req, res, next) => {
@@ -195,7 +192,15 @@ const login = async (req, res, next) => {
   // });
   res
     .status(201)
-    .cookie("token", token, { httpOnly: true })
+    .cookie("token", token, {
+      path: "/",
+      expires: new Date(Date.now() + 1000 * 60 * 60),
+      httpOnly: true,
+    })
+    .cookie("LoggedIn", 1, {
+      path: "/",
+      expires: new Date(Date.now() + 1000 * 60 * 60),
+    })
     .send("Cookie Shipped");
 };
 
@@ -305,10 +310,7 @@ const editUser = async (req, res, next) => {
     return next(error);
   }
 
-  res
-    .status(201)
-    .cookie("token", token, { httpOnly: true })
-    .send("Cookie Shipped");
+  res.status(201).cookie("token", token, { path: "/" }).send("Cookie Shipped");
 };
 
 const deleteUser = async (req, res, next) => {
