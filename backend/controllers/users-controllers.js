@@ -293,24 +293,7 @@ const editUser = async (req, res, next) => {
     return next(error);
   }
 
-  let token;
-  try {
-    token = jwt.sign(
-      {
-        userId: user.id,
-      },
-      JWT_PRIVATE_KEY,
-      { expiresIn: JWT_EXPIRES }
-    );
-  } catch (err) {
-    const error = new HttpError(
-      "Something went wrong, could not update user.",
-      500
-    );
-    return next(error);
-  }
-
-  res.status(201).cookie("token", token, { path: "/" }).send("Cookie Shipped");
+  res.status(201);
 };
 
 const deleteUser = async (req, res, next) => {
