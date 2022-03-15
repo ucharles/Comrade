@@ -173,12 +173,7 @@ describe("POST /api/users/signup", () => {
       .send(userData)
       .then(async (res) => {
         expect(res.statusCode).toBe(201);
-        const cookies = res.headers["set-cookie"];
-        const token = cookieSplit(cookies, "token");
-        const decodedToken = jwt.verify(token, process.env.JWT_PRIVATE_KEY);
-        expect({
-          userId: decodedToken.userId,
-        }).toEqual({ userId: decodedToken.userId });
+        expect(res.body.message).toEqual("Registration Complete.");
       });
   });
 });

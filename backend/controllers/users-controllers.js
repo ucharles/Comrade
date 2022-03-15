@@ -117,7 +117,7 @@ const signup = async (req, res, next) => {
   //   token: token,
   // });
 
-  res.status(201).send("Registration Complete.");
+  res.status(201).send({ message: "Registration Complete." });
 };
 
 const login = async (req, res, next) => {
