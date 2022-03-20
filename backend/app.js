@@ -10,6 +10,7 @@ const csrf = require("csurf");
 
 const eventRoutes = require("./routes/events-routes");
 const usersRoutes = require("./routes/users-routes");
+const calendarRoutes = require("./routes/calendars-routes");
 
 function createServer() {
   const app = express();
@@ -21,7 +22,7 @@ function createServer() {
   app.use((req, res, next) => {
     // 접근 가능한 도메인 제한
     res.setHeader("Access-Control-Allow-Origin", process.env.FRONTEND_URL);
-    //res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Credentials", true);
     res.setHeader(
       "Access-Control-Allow-Headers",
       "Origin, X-Request-With, Content-Type, Accept, Authorization"
@@ -38,6 +39,7 @@ function createServer() {
   app.use("/uploads/images", express.static(path.join("uploads", "images")));
   app.use("/api/users", usersRoutes);
   app.use("/api/events", eventRoutes);
+  app.use("/api/calendar", calendarRoutes);
 
   // app.get("/", csrfProtection, (req, res) => {
   //   res.cookie("XSRF-TOKEN", req.csrfToken(), {

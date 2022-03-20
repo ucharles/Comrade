@@ -200,8 +200,7 @@ const login = async (req, res, next) => {
     .cookie("LoggedIn", 1, {
       path: "/",
       expires: new Date(Date.now() + 1000 * 60 * 60),
-    })
-    .send("Cookie Shipped");
+    });
 };
 
 const getUserById = async (req, res, next) => {
@@ -352,19 +351,15 @@ const deleteUser = async (req, res, next) => {
   // 일정만 등록한 경우엔 삭제 가능. 일정이 전부 삭제되진 않음.
   //res.clearCookie("XSRF-TOKEN");
   res.clearCookie("token");
-  res.status(200).json({
-    success: true,
-    message: "Logged out",
-  });
+  res.clearCookie("LoggedIn");
+  res.status(200);
 };
 
 const logout = (req, res, next) => {
   //res.clearCookie("XSRF-TOKEN");
   res.clearCookie("token");
-  res.status(200).json({
-    success: true,
-    message: "Logged out",
-  });
+  res.clearCookie("LoggedIn");
+  res.status(200);
 };
 
 exports.getUsers = getUsers;

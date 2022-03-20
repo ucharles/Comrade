@@ -39,6 +39,7 @@ router.post(
 
 router.use(checkAuth);
 
+router.get("/logout", usersControllers.logout);
 router.get("/:id", usersControllers.getUserById);
 router.patch(
   "/:id",
