@@ -41,13 +41,13 @@ const isCreator = (calendar) => {
 
 const EditCalendars = () => {
   // 탈퇴 -> 탈퇴 완료시 캘린더 삭제된 결과 표시 필요
-  const withdrawalHanlder = (event) => {
-    alert("in withdrawalHandler");
+  const leaveHanlder = (event) => {
+    alert("in leaveHandler");
     console.log(event.target.value);
   };
   // 임명 -> 임명 완료 시, 탈퇴버튼 활성화 표시 필요
-  const delegationHandler = (event) => {
-    alert("in delegationHanlder");
+  const changeOwnerHandler = (event) => {
+    alert("in changeOwnerHanlder");
     console.log(event);
   };
   // 삭제 -> 삭제완료시 캘린더 삭제된 결과 표시 필요
@@ -88,23 +88,23 @@ const EditCalendars = () => {
                     {/* 캘린더 팀원, 팀장인지에 따라 버튼을 달리 표시 */}
                     {!isCreator(calendar) && (
                       <Button
-                        onClick={withdrawalHanlder}
+                        onClick={leaveHanlder}
                         value={calendar._id}
                         variant="contained"
                         sx={{ width: 100, fontSize: 12 }}
                       >
-                        Withdrawal
+                        leave
                       </Button>
                     )}
                     {isCreator(calendar) && (
                       <React.Fragment>
                         <Button
-                          onClick={delegationHandler}
+                          onClick={changeOwnerHandler}
                           value={calendar._id}
                           variant="outlined"
                           sx={{ mr: 1, width: 100, fontSize: 12 }}
                         >
-                          Delegation
+                          changeOwner
                         </Button>
                         <Button
                           onClick={deleteHandler}
