@@ -104,7 +104,7 @@ const EditCalendars = () => {
                           variant="outlined"
                           sx={{ mr: 1, width: 100, fontSize: 12 }}
                         >
-                          changeOwner
+                          Change Owner
                         </Button>
                         <Button
                           onClick={deleteHandler}
