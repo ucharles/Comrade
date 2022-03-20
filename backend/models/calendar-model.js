@@ -17,7 +17,7 @@ const calendarSchema = new Schema(
         administrator: { type: Boolean, default: false },
       },
     ],
-    creator: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
+    owner: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
     fixedEvents: [
       {
         _id: { type: mongoose.Types.ObjectId },
@@ -29,7 +29,47 @@ const calendarSchema = new Schema(
           type: Date,
           required: true,
         },
-        memberCount: { type: Number, required: true },
+        depth: { type: Number, required: true },
+        members: [
+          {
+            intersection: [
+              {
+                id: {
+                  type: mongoose.Types.ObjectId,
+                  required: true,
+                  ref: "User",
+                },
+                image: { type: String },
+                nickname: { type: String, required: true },
+                administrator: { type: Boolean, default: false },
+              },
+            ],
+            noIntersection: [
+              {
+                id: {
+                  type: mongoose.Types.ObjectId,
+                  required: true,
+                  ref: "User",
+                },
+                image: { type: String },
+                nickname: { type: String, required: true },
+                administrator: { type: Boolean, default: false },
+              },
+            ],
+            noEvent: [
+              {
+                id: {
+                  type: mongoose.Types.ObjectId,
+                  required: true,
+                  ref: "User",
+                },
+                image: { type: String },
+                nickname: { type: String, required: true },
+                administrator: { type: Boolean, default: false },
+              },
+            ],
+          },
+        ],
       },
     ],
   },

@@ -3,13 +3,14 @@ const { check } = require("express-validator");
 
 const checkAuth = require("../middleware/check-auth");
 const fileUpload = require("../middleware/file-upload");
-const calendarsControllers = require("../controllers/calendar-controllers");
+const calendarsControllers = require("../controllers/calendars-controllers");
 
 const router = express.Router();
 
 router.use(checkAuth);
 
 router.get("/", calendarsControllers.getCalendarsByUserId);
+router.get("/:calendarId", calendarsControllers.getCalendarByCalendarId);
 
 router.post(
   "/",
@@ -22,13 +23,22 @@ router.post(
 );
 
 router.patch(
-  "/:cid",
+  "/",
   fileUpload.single("image"),
   [
     check("name").not().isEmpty().isLength({ min: 5, max: 15 }),
     check("description").isLength({ min: 5, max: 50 }),
   ],
   calendarsControllers.updateCalendarById
+);
+
+router.patch("/admin", calendarsControllers.setMemberToAdministratorOrNot);
+router.patch("/owner", calendarsControllers.setMemberToAdministratorOrNot);
+
+router.delete("/:calendarId", calendarsControllers.deleteCalendar);
+router.delete(
+  "/:calendarId/:userId",
+  calendarsControllers.deleteUserFromCalendar
 );
 
 module.exports = router;
