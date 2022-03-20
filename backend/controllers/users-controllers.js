@@ -200,7 +200,8 @@ const login = async (req, res, next) => {
     .cookie("LoggedIn", 1, {
       path: "/",
       expires: new Date(Date.now() + 1000 * 60 * 60),
-    });
+    })
+    .send();
 };
 
 const getUserById = async (req, res, next) => {
