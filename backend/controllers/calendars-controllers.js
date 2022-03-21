@@ -12,18 +12,28 @@ const getCalendarsByUserId = async (req, res, next) => {
   let userWithCalendars;
   try {
     userWithCalendars = await User.findById(req.userData.userId)
-      .populate({ path: "calendars", select: "name image" })
+      .populate({ path: "calendars", select: "name image members owner" })
       .exec();
   } catch (err) {
     const error = new HttpError("Getting data failed, please try again", 500);
     return next(error);
   }
-  // if(!place || place.length === 0)
+
   if (!userWithCalendars || userWithCalendars.calendars.length === 0) {
     return next(
       new HttpError("Could not find calendars for the privided id", 404)
     ); // will be trigger: error handling middleware
   }
+
+  for (let calendar of userWithCalendars.calendars) {
+    if (calendar.owner.toString() !== req.userData.userId) {
+      calendar.owner = null;
+    }
+    calendar.members = calendar.members.find(
+      (v) => v._id.toString() === req.userData.userId
+    );
+  }
+
   res.status(200).json({
     calendars: userWithCalendars.calendars.map((calendar) =>
       calendar.toObject({ getters: true })

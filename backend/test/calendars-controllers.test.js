@@ -172,6 +172,8 @@ describe("GET /api/calendar", () => {
       .get(url)
       .set({ cookie: cookie })
       .then(async (res) => {
+        expect(res.body.calendars).toEqual("5cabe64dcf0d4447fa60f5e2");
+
         expect(res.statusCode).toBe(200);
         expect(res.body.calendars[0].id).toEqual("5cabe64dcf0d4447fa60f5e2");
         expect(res.body.calendars[1].id).toEqual("5cabe64dcf0d4447fa60f5e3");
