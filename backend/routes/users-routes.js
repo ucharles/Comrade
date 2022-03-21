@@ -11,8 +11,6 @@ const router = express.Router();
 // const csrfProtection = csrf({ cookie: true });
 
 // 라우터 순서 주의!
-router.get("/", usersControllers.getUsers);
-
 router.post(
   "/login",
   // csrfProtection,
@@ -39,10 +37,12 @@ router.post(
 
 router.use(checkAuth);
 
+router.get("/", usersControllers.getUserById);
+router.get("/token-check", usersControllers.getTokenAndCheck);
+
 router.get("/logout", usersControllers.logout);
-router.get("/:id", usersControllers.getUserById);
 router.patch(
-  "/:id",
+  "/",
   // csrfProtection,
   fileUpload.single("image"),
   [
@@ -55,7 +55,7 @@ router.patch(
   ], // express validator
   usersControllers.editUser
 );
-router.delete("/:id", usersControllers.deleteUser);
+router.delete("/", usersControllers.deleteUser);
 
 module.exports = router;
 // router를 export 할 수 있다!
