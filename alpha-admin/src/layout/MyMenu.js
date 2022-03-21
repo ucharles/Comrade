@@ -21,6 +21,7 @@ import ExpandMore from "@mui/icons-material/ExpandMore";
 import StarBorder from "@mui/icons-material/StarBorder";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AddIcon from "@mui/icons-material/Add";
+import EditIcon from "@mui/icons-material/Edit";
 
 const menuItems = [
   {
@@ -100,7 +101,8 @@ const MyMenu = ({ onMenuClick, logout }) => {
               component="a"
               href="/#"
               selected={selectedIndex === 0}
-              onClick={(event) => handleListItemClick(event, 0)}>
+              onClick={(event) => handleListItemClick(event, 0)}
+            >
               <ListItemIcon>
                 <Avatar
                   sx={{ width: 35, height: 35 }}
@@ -114,7 +116,8 @@ const MyMenu = ({ onMenuClick, logout }) => {
               component="a"
               href="/#"
               selected={selectedIndex === 1}
-              onClick={(event) => handleListItemClick(event, 1)}>
+              onClick={(event) => handleListItemClick(event, 1)}
+            >
               <ListItemIcon>
                 <Avatar {...stringAvatar("Calendar 2", 35, 35)} />
               </ListItemIcon>
@@ -125,8 +128,20 @@ const MyMenu = ({ onMenuClick, logout }) => {
 
         <ListItemButton
           component="a"
+          href="/#/calendar/settings"
+          onClick={(event) => handleListItemClick(event, null)}
+        >
+          <ListItemIcon>
+            <EditIcon />
+          </ListItemIcon>
+          <ListItemText primary="Edit Calendars" />
+        </ListItemButton>
+
+        <ListItemButton
+          component="a"
           href="/#/calendar/new"
-          onClick={(event) => handleListItemClick(event, null)}>
+          onClick={(event) => handleListItemClick(event, null)}
+        >
           <ListItemIcon>
             <AddIcon />
           </ListItemIcon>
@@ -138,7 +153,8 @@ const MyMenu = ({ onMenuClick, logout }) => {
         <ListItemButton
           component="a"
           href="/#/settings"
-          onClick={(event) => handleListItemClick(event, null)}>
+          onClick={(event) => handleListItemClick(event, null)}
+        >
           <ListItemIcon>
             <SettingsIcon />
           </ListItemIcon>
