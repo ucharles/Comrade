@@ -35,9 +35,7 @@ const getCalendarsByUserId = async (req, res, next) => {
   }
 
   res.status(200).json({
-    calendars: userWithCalendars.calendars.map((calendar) =>
-      calendar.toObject({ getters: true })
-    ),
+    calendars: userWithCalendars.calendars,
   });
 };
 
@@ -56,7 +54,7 @@ const getCalendarByCalendarId = async (req, res, next) => {
   if (
     calendar.members.find((v) => {
       return v._id.toString() === req.userData.userId;
-    }) === "undefined"
+    }) === undefined
   ) {
     const error = new HttpError("Not authorized to access calendar.", 403);
     return next(error);
@@ -305,9 +303,9 @@ const addMemberToCalendar = async (req, res, next) => {
 
   // 캘린더에 해당 유저가 이미 존재하는 경우, 더이상 진행하지 않음
   if (
-    calendar.members.find((v) => {
+    !!calendar.members.find((v) => {
       return v._id.toString() === req.userData.userId;
-    }) !== "undefined"
+    })
   ) {
     const error = new HttpError(
       "This user is already invited this calendar.",
@@ -325,7 +323,7 @@ const addMemberToCalendar = async (req, res, next) => {
 
   const newMember = {
     _id: req.userData.userId,
-    nickname: nickname === "" ? user.username : nickname,
+    nickname: nickname === undefined ? user.username : nickname,
     role,
     administrator: false,
   };
@@ -346,7 +344,7 @@ const addMemberToCalendar = async (req, res, next) => {
     );
     return next(error);
   }
-  res.status(200).json({ message: "invite success" });
+  res.status(200).json({ message: "Invite Success" });
 };
 
 const setMemberToAdministratorOrNot = async (req, res, next) => {
@@ -359,7 +357,7 @@ const setMemberToAdministratorOrNot = async (req, res, next) => {
   if (
     [1, 0, true, false].find((v) => {
       return v === administrator;
-    }) === "undefined"
+    }) === undefined
   ) {
     const error = new HttpError("Invalid input, please try again. ", 404);
     return next(error);
@@ -388,7 +386,7 @@ const setMemberToAdministratorOrNot = async (req, res, next) => {
   if (
     calendar.members.find((v) => {
       return v._id.toString() === userId;
-    }) === "undefined"
+    }) === undefined
   ) {
     const error = new HttpError("Don't exist user in calendar.", 404);
     return next(error);
@@ -445,7 +443,7 @@ const setMemberToOwner = async (req, res, next) => {
   if (
     calendar.members.find((v) => {
       return v._id.toString() === userId;
-    }) === "undefined"
+    }) === undefined
   ) {
     const error = new HttpError("Don't exist user in calendar.", 404);
     return next(error);
@@ -504,7 +502,7 @@ const deleteUserFromCalendar = async (req, res, next) => {
   if (
     calendar.members.find((v) => {
       return v._id.toString() === deleteUserId;
-    }) === "undefined"
+    }) === undefined
   ) {
     const error = new HttpError("Don't exist user in calendar.", 404);
     return next(error);

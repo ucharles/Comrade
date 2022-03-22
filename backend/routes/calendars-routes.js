@@ -31,9 +31,9 @@ router.patch(
   ],
   calendarsControllers.updateCalendarById
 );
-
+router.patch("/member", calendarsControllers.addMemberToCalendar);
 router.patch("/admin", calendarsControllers.setMemberToAdministratorOrNot);
-router.patch("/owner", calendarsControllers.setMemberToAdministratorOrNot);
+router.patch("/owner", calendarsControllers.setMemberToOwner);
 
 router.delete("/:calendarId", calendarsControllers.deleteCalendar);
 router.delete(

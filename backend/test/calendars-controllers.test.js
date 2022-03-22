@@ -1,8 +1,6 @@
 const createServer = require("../app");
 const request = require("supertest");
 const mongoose = require("mongoose");
-const jwt = require("jsonwebtoken");
-const { cookieSplit } = require("../util/cookie-spliter");
 const bcrypt = require("bcryptjs");
 
 const Event = require("../models/event-model");
@@ -172,11 +170,9 @@ describe("GET /api/calendar", () => {
       .get(url)
       .set({ cookie: cookie })
       .then(async (res) => {
-        expect(res.body.calendars).toEqual("5cabe64dcf0d4447fa60f5e2");
-
         expect(res.statusCode).toBe(200);
-        expect(res.body.calendars[0].id).toEqual("5cabe64dcf0d4447fa60f5e2");
-        expect(res.body.calendars[1].id).toEqual("5cabe64dcf0d4447fa60f5e3");
+        expect(res.body.calendars[0]._id).toEqual("5cabe64dcf0d4447fa60f5e2");
+        expect(res.body.calendars[1]._id).toEqual("5cabe64dcf0d4447fa60f5e3");
       });
   });
 });
@@ -268,6 +264,37 @@ describe("PATCH /api/calendar", () => {
   });
 });
 
+describe("PATCH /api/calendar/member", () => {
+  test("OK", async () => {
+    const loginResponse = await request(app)
+      .post(`/api/users/login`)
+      .send({ email: "hhh2@hhh.com", password: "123123" });
+
+    const cookie = loginResponse.headers["set-cookie"];
+
+    const calendarData = {
+      calendarId: "5cabe64dcf0d4447fa60f5e3",
+    };
+
+    const url = `/api/calendar/member`;
+    await request(app)
+      .patch(url)
+      .set(
+        { cookie: cookie },
+        {
+          originalname: "sample.name",
+          mimetype: "sample.type",
+          path: "sample.url",
+          buffer: Buffer.from("whatever"),
+        }
+      )
+      .send(calendarData)
+      .then(async (res) => {
+        expect(res.statusCode).toBe(200);
+      });
+  });
+});
+
 describe("PATCH /api/calendar/admin", () => {
   test("OK", async () => {
     const loginResponse = await request(app)
@@ -305,7 +332,37 @@ describe("PATCH /api/calendar/admin", () => {
 });
 
 describe("PATCH /api/calendar/owner", () => {
-  test("OK", async () => {});
+  test("OK", async () => {
+    const loginResponse = await request(app)
+      .post(`/api/users/login`)
+      .send({ email: "hhh3@hhh.com", password: "123123" });
+
+    const cookie = loginResponse.headers["set-cookie"];
+
+    const calendarOwnerData = {
+      userId: "5cabe64dcf0d4447fa60f5e9",
+      calendarId: "5cabe64dcf0d4447fa60f5e2",
+      administrator: true,
+    };
+
+    const url = `/api/calendar/owner`;
+    await request(app)
+      .patch(url)
+      .set(
+        { cookie: cookie },
+        {
+          originalname: "sample.name",
+          mimetype: "sample.type",
+          path: "sample.url",
+          buffer: Buffer.from("whatever"),
+        }
+      )
+      .send(calendarOwnerData)
+      .then(async (res) => {
+        expect(res.statusCode).toBe(200);
+        expect(res.body.message).toEqual("Change owner success");
+      });
+  });
 });
 
 describe("DELETE /api/calendar/:calendarId", () => {
@@ -357,7 +414,7 @@ describe("DELETE /api/calendar/:calendarId/:userId", () => {
       )
       .then(async (res) => {
         expect(res.statusCode).toBe(200);
-        expect(res.body.message).toEqual("Deleted Calendar.");
+        expect(res.body.message).toEqual("Deleted user in calendar.");
       });
   });
 });
