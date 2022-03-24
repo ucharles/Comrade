@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { Title } from "react-admin";
 import { Avatar, Box, Paper, Typography } from "@mui/material";
 import { makeStyles } from "@mui/styles";
@@ -37,6 +39,7 @@ const useStyles = makeStyles((theme) => ({
 
 export const Dashboard = () => {
   const classes = useStyles();
+  const navigate = useNavigate();
 
   const EVENTS = [
     {
@@ -58,6 +61,12 @@ export const Dashboard = () => {
   const editMemberModalOpen = () => setEditMemberOpen(true);
   const editMemberModalClose = () => setEditMemberOpen(false);
 
+  const dateClickHandler = (arg) => {
+    let path = `/calendar/event/${arg.dateStr}`;
+    navigate(path);
+    // return <AddEvent dateStr={arg.dateStr} />;
+  };
+
   return (
     <React.Fragment>
       <Grid container spacing={1} sx={{ width: "100%" }}>
@@ -77,15 +86,13 @@ export const Dashboard = () => {
                 <IconButton
                   className={classes.button}
                   href="#/calendar/edit"
-                  variant="contained"
-                >
+                  variant="contained">
                   <EditIcon />
                 </IconButton>
                 <IconButton
                   className={classes.button}
                   href="#/calendar/event"
-                  variant="contained"
-                >
+                  variant="contained">
                   <AddIcon />
                 </IconButton>
               </Box>
@@ -93,6 +100,7 @@ export const Dashboard = () => {
             <Box sx={{ height: "80vh" }}>
               <FullCalendar
                 timeZone="local"
+                dateClick={dateClickHandler}
                 plugins={[dayGridPlugin, interactionPlugin]}
                 initialView="dayGridMonth"
                 events={EVENTS}

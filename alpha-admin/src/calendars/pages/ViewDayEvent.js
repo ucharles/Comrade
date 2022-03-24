@@ -1,13 +1,27 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useReducer } from "react";
 import Timeline, {
   TimelineHeaders,
   SidebarHeader,
   DateHeader,
 } from "react-calendar-timeline";
 import "react-calendar-timeline/lib/Timeline.css";
+import { useNavigate } from "react-router-dom";
+
+import {
+  Avatar,
+  Box,
+  Paper,
+  Typography,
+  Card,
+  Button,
+  Modal,
+  Popper,
+} from "@mui/material";
+
 import moment from "moment";
 import { useParams } from "react-router-dom";
 import "./ViewDayEvent.css";
+import EventModal from "../../layout/EventModals";
 
 const groups = [
   { id: 1, title: "Summary" },
@@ -16,22 +30,6 @@ const groups = [
   { id: 4, title: "world" },
   { id: 5, title: "world" },
   { id: 6, title: "world" },
-  { id: 7, title: "world" },
-  { id: 8, title: "world" },
-  { id: 9, title: "world" },
-  { id: 10, title: "world" },
-  { id: 11, title: "world" },
-  { id: 12, title: "world" },
-  { id: 13, title: "world" },
-  { id: 14, title: "world" },
-  { id: 15, title: "world" },
-  { id: 16, title: "world" },
-  { id: 17, title: "world" },
-  { id: 18, title: "world" },
-  { id: 19, title: "world" },
-  { id: 20, title: "world" },
-  { id: 21, title: "world" },
-  { id: 22, title: "world" },
 ];
 
 const items = [
@@ -56,6 +54,13 @@ const items = [
     start_time: moment().add(2, "hour"),
     end_time: moment().add(3, "hour"),
   },
+  {
+    id: 4,
+    group: 1,
+    title: "3",
+    start_time: moment().add(2, "hour"),
+    end_time: moment().add(4, "hour"),
+  },
 ];
 
 const ViewDayEvent = (props) => {
@@ -70,9 +75,39 @@ const ViewDayEvent = (props) => {
     };
   }, []);
   const isMobile = width <= 768;
+  const navigate = useNavigate();
 
   // const [sidebarWidth, setSideBarWidth] = useState(0);
   const inputDate = useParams().date;
+  let path = `/calendar/event/`;
+
+  function reducer(state, action) {
+    switch (action.type) {
+      case "prev":
+        navigate(path + moment(state).add(-1, "day").format("YYYY-MM-DD"));
+        window.location.reload(false);
+        return 0;
+      case "next":
+        navigate(path + moment(state).add(1, "day").format("YYYY-MM-DD"));
+        window.location.reload(false);
+        return 0;
+      default:
+        throw new Error();
+    }
+  }
+  function Counter() {
+    const [state, dispatch] = useReducer(reducer, inputDate);
+    return (
+      <>
+        <Button variant="contained" onClick={() => dispatch({ type: "prev" })}>
+          Prev
+        </Button>
+        <Button variant="contained" onClick={() => dispatch({ type: "next" })}>
+          Next
+        </Button>
+      </>
+    );
+  }
 
   let defaultTimeStart = moment(inputDate)
     .startOf("day")
@@ -86,12 +121,19 @@ const ViewDayEvent = (props) => {
   const defaultTimeRange = defaultTimeEnd - defaultTimeStart;
   const defaultVisableTimeStart = moment(inputDate).startOf("day").toDate();
   const defaultVisableTimeEnd = moment(inputDate).add(24, "hour");
-
-  console.log(defaultTimeStart);
+  // 멤버 추가 모달 State
+  const [eventOpen, setEventOpen] = useState(false);
+  const [eventObj, setEventObj] = useState({});
+  const eventModalOpen = (obj) => {
+    setEventOpen(true);
+    setEventObj(obj);
+  };
+  const eventModalClose = () => setEventOpen(false);
 
   // const sideBarHandler = () => {
   //   sidebarWidth === 0 ? setSideBarWidth(150) : setSideBarWidth(0);
   // };
+
   const intervalRenderer = ({ intervalContext, getIntervalProps, data }) => {
     return (
       <div
@@ -125,10 +167,16 @@ const ViewDayEvent = (props) => {
           {sidebarWidth === 0 ? "Open" : "Close"}
         </button>
       </div> */}
-
       {/* <div>{inputDate}</div> */}
-      <div>
+      <Card>
+        <Box sx={{ style: "flex" }}>
+          <Counter />
+          <Button href="#" variant="contained">
+            Calendar
+          </Button>
+        </Box>
         <Timeline
+          stackItems
           groups={groups}
           items={items}
           defaultTimeStart={defaultTimeStart}
@@ -136,7 +184,20 @@ const ViewDayEvent = (props) => {
           minZoom={defaultTimeRange}
           maxZoom={defaultTimeRange}
           canMove={false}
+          canResize={false}
           sidebarWidth={isMobile ? window.innerWidth / 5 : 150}
+          onItemSelect={(itemId, e, time) => {
+            const obj = items.find((v) => {
+              return v.id === itemId;
+            });
+            eventModalOpen(obj);
+          }}
+          onItemClick={(itemId, e, time) => {
+            let obj = items.find((v) => {
+              return v.id === itemId;
+            });
+            eventModalOpen(obj);
+          }}
           onTimeChange={(_start, _end, updateScrollCanvas) => {
             if (
               _start > defaultVisableTimeStart &&
@@ -147,20 +208,21 @@ const ViewDayEvent = (props) => {
           <TimelineHeaders className="sticky">
             <SidebarHeader>
               {({ getRootProps }) => {
-                return <div {...getRootProps()}>Name</div>;
+                return <div {...getRootProps()}></div>;
               }}
             </SidebarHeader>
             {/* 내용을 가운데에 고정하고 싶음 */}
             <DateHeader
               unit="primaryHeader"
               headerData={{ isMonth: true }}
-              labelFormat="YYYY/MM/DD dddd"
+              labelFormat="YYYY/MM/DD ddd"
               intervalRenderer={intervalRenderer}
             />
             <DateHeader unit="hour" labelFormat="HH" />
           </TimelineHeaders>
         </Timeline>
-      </div>
+      </Card>
+      <EventModal open={eventOpen} close={eventModalClose} obj={eventObj} />
     </React.Fragment>
   );
 };
