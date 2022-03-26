@@ -32,7 +32,7 @@ const useStyles = makeStyles((theme) => ({
     padding: 15,
     height: "100%",
     [theme.breakpoints.down("sm")]: {
-      width: "100%",
+      width: "auto",
     },
   },
 }));
@@ -69,7 +69,7 @@ export const Dashboard = () => {
 
   return (
     <React.Fragment>
-      <Grid container spacing={1} sx={{ width: "100%" }}>
+      <Grid container spacing={1} sx={{ width: "auto" }}>
         <Grid item xs={12} sm={12} md={12} lg={10}>
           <Paper className={classes.card}>
             <Title title={process.env.REACT_APP_TITLE} />
