@@ -176,6 +176,24 @@ describe("GET /api/calendar", () => {
       });
   });
 });
+describe("GET /api/calendar/admin", () => {
+  test("OK", async () => {
+    const loginResponse = await request(app)
+      .post(`/api/users/login`)
+      .send({ email: "hhh1@hhh.com", password: "123123" });
+
+    const cookie = loginResponse.headers["set-cookie"];
+
+    const url = `/api/calendar/admin`;
+    await request(app)
+      .get(url)
+      .set({ cookie: cookie })
+      .then(async (res) => {
+        expect(res.statusCode).toBe(201);
+        expect(res.body.calendarsAdmin);
+      });
+  });
+});
 
 describe("GET /api/calendar/:calendarId", () => {
   test("OK", async () => {
