@@ -19,30 +19,35 @@ import jsonServerProvider from "ra-data-json-server";
 import UserSetting from "./users/pages/UserSetting";
 
 const dataProvider = jsonServerProvider("https://jsonplaceholder.typicode.com");
-const App = () => (
-  <Admin
-    layout={MyLayout}
-    loginPage={SigniInSide}
-    title={process.env.REACT_APP_TITLE}
-    dashboard={Dashboard}
-    authProvider={AuthProvider}
-    dataProvider={dataProvider}
-  >
-    <CustomRoutes>
-      <Route exact path="/calendar/new" element={<CreateCalendar />} />
-      <Route exact path="/calendar/:id" element={<SignUp />} />
-      <Route exact path="/calendar/event" element={<AddEvents />} />
-      <Route exact path="/calendar/edit" element={<EditEvents />} />
-      <Route exact path="/calendar/:id/:date" element={<SignUp />} />
-      <Route exact path="/settings" element={<UserSetting />} />
-      <Route exact path="/calendar/join" element={<JoinCalendar />} />
-      <Route exact path="/calendar/settings" element={<EditCalendars />} />
-    </CustomRoutes>
-    <CustomRoutes noLayout>
-      <Route exact path="/signup" element={<SignUp />} />
-    </CustomRoutes>
-    <Resource name="posts" list={PostList} />
-  </Admin>
-);
+function App() {
+  return (
+    <Admin
+      layout={MyLayout}
+      loginPage={SigniInSide}
+      title={process.env.REACT_APP_TITLE}
+      dashboard={Dashboard}
+      authProvider={AuthProvider}
+      dataProvider={dataProvider}
+      checkPermissions={true}
+    >
+      {(permissions) => [
+        <CustomRoutes>
+          <Route exact path="/calendar/:id" element={<SignUp />} />
+          <Route exact path="/calendar/new" element={<CreateCalendar />} />
+          <Route exact path="/calendar/event" element={<AddEvents />} />
+          <Route exact path="/calendar/edit" element={<EditEvents />} />
+          <Route exact path="/calendar/:id/:date" element={<SignUp />} />
+          <Route exact path="/settings" element={<UserSetting />} />
+          <Route exact path="/calendar/join" element={<JoinCalendar />} />
+          <Route exact path="/calendar/settings" element={<EditCalendars />} />
+        </CustomRoutes>,
+      ]}
+      <CustomRoutes noLayout>
+        <Route exact path="/signup" element={<SignUp />} />
+      </CustomRoutes>
+      <Resource name="posts" list={PostList} />
+    </Admin>
+  );
+}
 
 export default App;
