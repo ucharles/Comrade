@@ -2,8 +2,6 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Card,
-  CardContent,
-  CardHeader,
   Grid,
   Button,
   Typography,
@@ -13,7 +11,6 @@ import {
   InputLabel,
   Select,
   MenuItem,
-  TextField,
 } from "@mui/material";
 import DatePicker, { Calendar, DateObject } from "react-multi-date-picker";
 import TimePickerPlugin from "react-multi-date-picker/plugins/time_picker";
@@ -23,7 +20,7 @@ import { Title } from "react-admin";
 const dateFormat = "YYYY-MM-DD";
 
 const AddEvents = () => {
-  const { isLoading, error, sendRequest, clearError } = useHttpClient();
+  const { sendRequest } = useHttpClient();
 
   // console.log(Intl.DateTimeFormat().resolvedOptions().timeZone);
   // console.log(new Date().toTimeString().slice(9));
@@ -92,7 +89,8 @@ const AddEvents = () => {
               marginTop: 3,
               display: "flex",
               flexDirection: "column",
-            }}>
+            }}
+          >
             <Typography component="h1" variant="h5">
               Add Event
             </Typography>
@@ -102,7 +100,8 @@ const AddEvents = () => {
               <Select
                 id="startDaySelector"
                 onChange={weekStartDayHandler}
-                value={weekStartDayIndex}>
+                value={weekStartDayIndex}
+              >
                 <MenuItem value="0">Sun</MenuItem>
                 <MenuItem value="1">Mon</MenuItem>
                 <MenuItem value="2">Tue</MenuItem>
@@ -116,7 +115,8 @@ const AddEvents = () => {
             <Box
               component="form"
               onSubmit={addEventSubmitHandler}
-              sx={{ mt: 3 }}>
+              sx={{ mt: 3 }}
+            >
               <Grid container spacing={2} alignItems="center">
                 <Grid item xs={12} sm={6}>
                   <Calendar
@@ -172,7 +172,8 @@ const AddEvents = () => {
                         fullWidth
                         variant="outlined"
                         onClick={dateResetHandler}
-                        sx={{ mb: 2 }}>
+                        sx={{ mb: 2 }}
+                      >
                         Reset
                       </Button>
                     </Grid>

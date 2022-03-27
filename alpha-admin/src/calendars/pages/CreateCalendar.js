@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from "react";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
-import { Card, CardContent, CardHeader } from "@mui/material";
+import { Card } from "@mui/material";
 import { Title } from "react-admin";
 import { styled } from "@mui/material/styles";
-
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
-import Link from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
@@ -76,7 +71,8 @@ export default function CreateCalendar() {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-            }}>
+            }}
+          >
             <Typography component="h1" variant="h5">
               Create New Calendar
             </Typography>
@@ -84,7 +80,8 @@ export default function CreateCalendar() {
               component="form"
               noValidate
               onSubmit={handleSubmit}
-              sx={{ mt: 3 }}>
+              sx={{ mt: 3 }}
+            >
               <Grid container spacing={2}>
                 <Grid item xs={12}>
                   <TextField
@@ -147,7 +144,8 @@ export default function CreateCalendar() {
                 type="submit"
                 fullWidth
                 variant="contained"
-                sx={{ mt: 3, mb: 1 }}>
+                sx={{ mt: 3, mb: 1 }}
+              >
                 Create
               </Button>
               <Button
@@ -155,7 +153,8 @@ export default function CreateCalendar() {
                 fullWidth
                 variant="outlined"
                 sx={{ mt: 1, mb: 1 }}
-                onClick={resetHandler}>
+                onClick={resetHandler}
+              >
                 Reset
               </Button>
             </Box>

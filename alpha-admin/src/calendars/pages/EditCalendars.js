@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
   Card,
   Typography,
@@ -21,6 +21,7 @@ let calendars = [
     name: "dummy calendar1",
     description: "description1",
     creator: "Captain1",
+    member: "Captain1",
     timestamps: "2022-01-05 13:00",
   },
   {
@@ -28,15 +29,13 @@ let calendars = [
     name: "dummy calendar2",
     description: "description222222",
     creator: "Captain2",
+    member: "Captain1",
     timestamps: "2022-01-06 13:00",
   },
 ];
 
-// 유저 아이디 더미
-const username = "Captain2";
-
 const isCreator = (calendar) => {
-  return calendar.creator === username;
+  return calendar.creator === calendar.member;
 };
 
 const EditCalendars = () => {
