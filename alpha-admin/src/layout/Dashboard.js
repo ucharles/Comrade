@@ -112,26 +112,36 @@ export const Dashboard = () => {
         <Grid item xs={12} sm={12} md={12} lg={2}>
           <Paper className={classes.card}>
             <Box sx={{ display: "flex", mb: 1 }}>
-              <Typography variant="h6" component="h2" sx={{ ml: 0.5, mt: 0.4 }}>
-                Members (n)
-              </Typography>
-              <Box className={classes.buttonBox}>
+              <Box>
+                <Typography
+                  variant="h6"
+                  component="h2"
+                  sx={{ ml: 0.5, mt: 0.4 }}>
+                  Members (n)
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  marginLeft: "auto",
+                  display: "flex",
+                  flexDirection: "column",
+                }}>
                 {/* 멤버 관리 모달 (캘린더 관리자에게만 보일 것)*/}
-                <IconButton sx={{ marginX: 1 }} onClick={editMemberModalOpen}>
+                <IconButton onClick={editMemberModalOpen}>
                   <EditIcon />
+                  <EditMemberModal
+                    open={editMemberOpen}
+                    close={editMemberModalClose}
+                  />
                 </IconButton>
-                <EditMemberModal
-                  open={editMemberOpen}
-                  close={editMemberModalClose}
-                />
                 {/* 멤버 추가 모달 */}
-                <IconButton sx={{ marginX: 1 }} onClick={addMemberModalOpen}>
+                <IconButton onClick={addMemberModalOpen}>
                   <AddIcon />
+                  <AddMemberModal
+                    open={addMemberOpen}
+                    close={addMemberModalClose}
+                  />
                 </IconButton>
-                <AddMemberModal
-                  open={addMemberOpen}
-                  close={addMemberModalClose}
-                />
               </Box>
             </Box>
             <Box sx={{ mb: 2, display: "flex" }}>

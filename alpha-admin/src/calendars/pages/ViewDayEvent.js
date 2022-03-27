@@ -1,11 +1,14 @@
+import moment from "moment";
 import React, { useState, useEffect, useReducer } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import Timeline, {
   TimelineHeaders,
   SidebarHeader,
   DateHeader,
 } from "react-calendar-timeline";
+import EventModal from "../../layout/EventModals";
 import "react-calendar-timeline/lib/Timeline.css";
-import { useNavigate } from "react-router-dom";
+import "./ViewDayEvent.css";
 
 import {
   Avatar,
@@ -17,11 +20,6 @@ import {
   Modal,
   Popper,
 } from "@mui/material";
-
-import moment from "moment";
-import { useParams } from "react-router-dom";
-import "./ViewDayEvent.css";
-import EventModal from "../../layout/EventModals";
 
 const groups = [
   { id: 1, title: "Summary" },
@@ -190,13 +188,17 @@ const ViewDayEvent = (props) => {
             const obj = items.find((v) => {
               return v.id === itemId;
             });
-            eventModalOpen(obj);
+            if (obj.group === 1) {
+              eventModalOpen(obj);
+            }
           }}
           onItemClick={(itemId, e, time) => {
             let obj = items.find((v) => {
               return v.id === itemId;
             });
-            eventModalOpen(obj);
+            if (obj.group === 1) {
+              eventModalOpen(obj);
+            }
           }}
           onTimeChange={(_start, _end, updateScrollCanvas) => {
             if (

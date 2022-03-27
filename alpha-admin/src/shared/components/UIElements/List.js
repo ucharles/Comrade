@@ -15,7 +15,7 @@ export default function AlignItemsList() {
       sx={{
         width: "100%",
         maxWidth: 500,
-        maxHeight: 350,
+        maxHeight: 250,
         overflow: "auto",
       }}>
       <ListItem>

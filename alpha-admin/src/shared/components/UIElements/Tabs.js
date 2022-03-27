@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
-import Typography from "@mui/material/Typography";
 import Box from "@mui/material/Box";
 
 function TabPanel(props) {
@@ -15,11 +14,7 @@ function TabPanel(props) {
       id={`simple-tabpanel-${index}`}
       aria-labelledby={`simple-tab-${index}`}
       {...other}>
-      {value === index && (
-        <Box sx={{ p: 0 }}>
-          <Typography>{children}</Typography>
-        </Box>
-      )}
+      {value === index && <Box sx={{ p: 0 }}>{children}</Box>}
     </div>
   );
 }
@@ -52,8 +47,8 @@ export default function BasicTabs(props) {
           onChange={handleChange}
           aria-label="basic tabs example"
           variant="fullWidth">
-          <Tab label="Matched: x" {...a11yProps(0)} />
-          <Tab label="Unmatched: x" {...a11yProps(1)} />
+          <Tab label="Match: x" {...a11yProps(0)} />
+          <Tab label="Unmatch: x" {...a11yProps(1)} />
           <Tab label="No event: x" {...a11yProps(2)} />
         </Tabs>
       </Box>
@@ -61,10 +56,10 @@ export default function BasicTabs(props) {
         {props.children}
       </TabPanel>
       <TabPanel value={value} index={1}>
-        Item Two
+        {props.children}
       </TabPanel>
       <TabPanel value={value} index={2}>
-        Item Three
+        {props.children}
       </TabPanel>
     </Box>
   );
