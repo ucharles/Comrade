@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { Title } from "react-admin";
 import { Avatar, Box, Paper, Typography } from "@mui/material";
 import { makeStyles } from "@mui/styles";
@@ -30,13 +32,14 @@ const useStyles = makeStyles((theme) => ({
     padding: 15,
     height: "100%",
     [theme.breakpoints.down("sm")]: {
-      width: "100%",
+      width: "auto",
     },
   },
 }));
 
 export const Dashboard = () => {
   const classes = useStyles();
+  const navigate = useNavigate();
 
   const EVENTS = [
     {
@@ -58,9 +61,15 @@ export const Dashboard = () => {
   const editMemberModalOpen = () => setEditMemberOpen(true);
   const editMemberModalClose = () => setEditMemberOpen(false);
 
+  const dateClickHandler = (arg) => {
+    let path = `/calendar/event/${arg.dateStr}`;
+    navigate(path);
+    // return <AddEvent dateStr={arg.dateStr} />;
+  };
+
   return (
     <React.Fragment>
-      <Grid container spacing={1} sx={{ width: "100%" }}>
+      <Grid container spacing={1} sx={{ width: "auto" }}>
         <Grid item xs={12} sm={12} md={12} lg={10}>
           <Paper className={classes.card}>
             <Title title={process.env.REACT_APP_TITLE} />
@@ -77,15 +86,13 @@ export const Dashboard = () => {
                 <IconButton
                   className={classes.button}
                   href="#/calendar/edit"
-                  variant="contained"
-                >
+                  variant="contained">
                   <EditIcon />
                 </IconButton>
                 <IconButton
                   className={classes.button}
                   href="#/calendar/event"
-                  variant="contained"
-                >
+                  variant="contained">
                   <AddIcon />
                 </IconButton>
               </Box>
@@ -93,6 +100,7 @@ export const Dashboard = () => {
             <Box sx={{ height: "80vh" }}>
               <FullCalendar
                 timeZone="local"
+                dateClick={dateClickHandler}
                 plugins={[dayGridPlugin, interactionPlugin]}
                 initialView="dayGridMonth"
                 events={EVENTS}
@@ -104,26 +112,36 @@ export const Dashboard = () => {
         <Grid item xs={12} sm={12} md={12} lg={2}>
           <Paper className={classes.card}>
             <Box sx={{ display: "flex", mb: 1 }}>
-              <Typography variant="h6" component="h2" sx={{ ml: 0.5, mt: 0.4 }}>
-                Members (n)
-              </Typography>
-              <Box className={classes.buttonBox}>
+              <Box>
+                <Typography
+                  variant="h6"
+                  component="h2"
+                  sx={{ ml: 0.5, mt: 0.4 }}>
+                  Members (n)
+                </Typography>
+              </Box>
+              <Box
+                sx={{
+                  marginLeft: "auto",
+                  display: "flex",
+                  flexDirection: "column",
+                }}>
                 {/* 멤버 관리 모달 (캘린더 관리자에게만 보일 것)*/}
-                <IconButton sx={{ marginX: 1 }} onClick={editMemberModalOpen}>
+                <IconButton onClick={editMemberModalOpen}>
                   <EditIcon />
+                  <EditMemberModal
+                    open={editMemberOpen}
+                    close={editMemberModalClose}
+                  />
                 </IconButton>
-                <EditMemberModal
-                  open={editMemberOpen}
-                  close={editMemberModalClose}
-                />
                 {/* 멤버 추가 모달 */}
-                <IconButton sx={{ marginX: 1 }} onClick={addMemberModalOpen}>
+                <IconButton onClick={addMemberModalOpen}>
                   <AddIcon />
+                  <AddMemberModal
+                    open={addMemberOpen}
+                    close={addMemberModalClose}
+                  />
                 </IconButton>
-                <AddMemberModal
-                  open={addMemberOpen}
-                  close={addMemberModalClose}
-                />
               </Box>
             </Box>
             <Box sx={{ mb: 2, display: "flex" }}>

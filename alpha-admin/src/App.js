@@ -14,6 +14,7 @@ import AddEvents from "./calendars/pages/AddEvents";
 import EditEvents from "./calendars/pages/EditEvents";
 import JoinCalendar from "./calendars/pages/JoinCalendar";
 import EditCalendars from "./calendars/pages/EditCalendars";
+import ViewDayEvent from "./calendars/pages/ViewDayEvent";
 
 import jsonServerProvider from "ra-data-json-server";
 import UserSetting from "./users/pages/UserSetting";
@@ -26,19 +27,17 @@ const App = () => (
     title={process.env.REACT_APP_TITLE}
     dashboard={Dashboard}
     authProvider={AuthProvider}
-    dataProvider={dataProvider}
-  >
+    dataProvider={dataProvider}>
     <CustomRoutes>
       <Route exact path="/calendar/new" element={<CreateCalendar />} />
-      <Route exact path="/calendar/:id" element={<SignUp />} />
       <Route exact path="/calendar/event" element={<AddEvents />} />
       <Route exact path="/calendar/edit" element={<EditEvents />} />
-      <Route exact path="/calendar/:id/:date" element={<SignUp />} />
       <Route exact path="/settings" element={<UserSetting />} />
       <Route exact path="/calendar/join" element={<JoinCalendar />} />
       <Route exact path="/calendar/settings" element={<EditCalendars />} />
     </CustomRoutes>
     <CustomRoutes noLayout>
+      <Route exact path="/calendar/event/:date" element={<ViewDayEvent />} />
       <Route exact path="/signup" element={<SignUp />} />
     </CustomRoutes>
     <Resource name="posts" list={PostList} />
