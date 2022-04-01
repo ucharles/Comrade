@@ -34,13 +34,13 @@ router.post(
   ], // express validator
   usersControllers.signup
 );
+router.get("/logout", usersControllers.logout);
 
 router.use(checkAuth);
 
 router.get("/", usersControllers.getUserById);
 router.get("/token-check", usersControllers.getTokenAndCheck);
 
-router.get("/logout", usersControllers.logout);
 router.patch(
   "/",
   // csrfProtection,
