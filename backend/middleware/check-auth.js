@@ -1,4 +1,5 @@
 const jwt = require("jsonwebtoken");
+const moment = require("moment-timezone");
 const HttpError = require("../util/http-error");
 const { diffDate } = require("../util/diff-date");
 const Token = require("../models/token-model");
@@ -68,7 +69,7 @@ module.exports = async (req, res, next) => {
     }
 
     // 리프레시 토큰의 만료기간이 7일 이하로 남은 경우, 재발행
-    if (diffDate(decodedRefreshToken.exp, "day") <= 7) {
+    if (decodedRefreshToken.exp <= moment(Date.now()).add(7, "d") / 1000) {
       let storedToken;
       try {
         storedToken = await Token.findOne({ uuid: decodedRefreshToken.uuid });
