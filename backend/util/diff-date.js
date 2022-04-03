@@ -4,6 +4,8 @@ module.exports.diffDate = function (date, time) {
     div = 60;
   } else if (time === "hour" || time === "h") {
     div = 60 / 60;
+  } else if (time === "day" || time === "d") {
+    div = 60 / 60 / 24;
   } else {
     div = 1;
   }
