@@ -1,18 +1,13 @@
 import React, { useState, useEffect } from "react";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
-import { Card, CardContent, CardHeader } from "@mui/material";
+import { Card } from "@mui/material";
 import { Title } from "react-admin";
 import { styled } from "@mui/material/styles";
-
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
-import Link from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
-import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
@@ -71,7 +66,8 @@ export default function UserSetting() {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-            }}>
+            }}
+          >
             <Typography component="h1" variant="h5">
               Account Settings
             </Typography>
@@ -79,7 +75,8 @@ export default function UserSetting() {
               component="form"
               noValidate
               onSubmit={handleSubmit}
-              sx={{ mt: 3 }}>
+              sx={{ mt: 3 }}
+            >
               <Grid container spacing={2}>
                 <Grid item xs={12}>
                   Profile Image
@@ -173,7 +170,8 @@ export default function UserSetting() {
                 type="submit"
                 fullWidth
                 variant="contained"
-                sx={{ mt: 3, mb: 1 }}>
+                sx={{ mt: 3, mb: 1 }}
+              >
                 Submit
               </Button>
               <Button
@@ -181,7 +179,8 @@ export default function UserSetting() {
                 fullWidth
                 variant="outlined"
                 sx={{ mt: 1, mb: 1 }}
-                Reset>
+                Reset
+              >
                 Cancel
               </Button>
             </Box>

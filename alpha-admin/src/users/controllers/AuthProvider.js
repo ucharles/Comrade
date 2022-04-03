@@ -1,30 +1,78 @@
-// eslint-disable-next-line import/no-anonymous-default-export
+// eslint-disable-next-line
 export default {
-  // called when the user attempts to log in
-  login: ({ email }) => {
-    // 로그인 API 콜
-    // 저장된 쿠키 확인, 인증키 유무 구분
-    localStorage.setItem("email", email);
-    // accept all username/password combinations
+  login: ({ email, password }) => {
+    const request = new Request(
+      process.env.REACT_APP_BACKEND_URL + "/users/login",
+      {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+        returnSecureToken: true,
+        credentials: "include",
+        headers: {
+          "content-Type": "application/json",
+        },
+      }
+    );
+
+    return fetch(request)
+      .then((response) => {
+        if (response.ok) {
+          return Promise.resolve();
+        } else if (response.status < 200 || response.status >= 300) {
+          return Promise.reject();
+        }
+      })
+      .catch(() => {
+        throw new Error("Network error");
+      });
+  },
+
+  checkAuth: () => {
     return Promise.resolve();
   },
-  // called when the user clicks on the logout button
+
+  // checkAuth 대신 사용
+  getPermissions: () => {
+    const request = new Request(
+      process.env.REACT_APP_BACKEND_URL + "/users/token-check",
+      { method: "GET", credentials: "include" }
+    );
+    return fetch(request)
+      .then((response) => {
+        if (response.ok) {
+          return Promise.resolve();
+        } else if (response.status < 200 || response.status >= 300) {
+          return Promise.reject();
+        }
+      })
+      .catch(() => {
+        throw new Error();
+      });
+  },
+
   logout: () => {
-    localStorage.removeItem("email");
-    return Promise.resolve();
+    const request = new Request(
+      process.env.REACT_APP_BACKEND_URL + "/users/logout",
+      { method: "GET", credentials: "include" }
+    );
+
+    return fetch(request)
+      .then((response) => {
+        if (response.ok) {
+          return Promise.resolve();
+        } else if (response.status < 200 || response.status >= 300) {
+          return Promise.reject();
+        }
+      })
+      .catch(() => {
+        throw new Error("Network error");
+      });
   },
-  // called when the API returns an error
+
   checkError: ({ status }) => {
     if (status === 401 || status === 403) {
-      localStorage.removeItem("email");
       return Promise.reject();
     }
     return Promise.resolve();
   },
-  // called when the user navigates to a new location, to check for authentication
-  checkAuth: () => {
-    return localStorage.getItem("email") ? Promise.resolve() : Promise.reject();
-  },
-  // called when the user navigates to a new location, to check for permissions / roles
-  getPermissions: () => Promise.resolve(),
 };
