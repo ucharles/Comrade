@@ -10,6 +10,7 @@ const router = express.Router();
 router.use(checkAuth);
 
 router.get("/", calendarsControllers.getCalendarsByUserId);
+router.get("/admin", calendarsControllers.getCalendarAdminByUserId);
 router.get("/:calendarId", calendarsControllers.getCalendarByCalendarId);
 
 router.post(

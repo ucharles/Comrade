@@ -8,9 +8,13 @@ const mongoose = require("mongoose");
 
 const User = require("../models/user-model");
 const Event = require("../models/event-model");
+const Token = require("../models/token-model");
+
+const { v4: uuid } = require("uuid");
 
 const JWT_PRIVATE_KEY = process.env.JWT_PRIVATE_KEY;
-const JWT_EXPIRES = process.env.JWT_EXPIRES;
+const JWT_EXPIRES_ACCESS_TOKEN = process.env.JWT_EXPIRES_ACCESS_TOKEN;
+const JWT_EXPIRES_REFRESH_TOKEN = process.env.JWT_EXPIRES_REFRESH_TOKEN;
 
 const signup = async (req, res, next) => {
   const errors = validationResult(req);
@@ -120,16 +124,33 @@ const login = async (req, res, next) => {
   }
 
   // JWT 토큰 생성
-  let token;
+  let accessToken;
+  let refreshToken;
+
+  const id = uuid();
+
+  const createdRefreshToken = new Token({
+    uuid: id,
+    userId: existingUser._id.toString(),
+  });
 
   try {
-    token = jwt.sign(
+    accessToken = jwt.sign(
       {
         userId: existingUser.id,
       },
       JWT_PRIVATE_KEY,
-      { expiresIn: JWT_EXPIRES }
+      { expiresIn: JWT_EXPIRES_ACCESS_TOKEN }
     );
+    refreshToken = jwt.sign(
+      {
+        uuid: id,
+      },
+      JWT_PRIVATE_KEY,
+      { expiresIn: JWT_EXPIRES_REFRESH_TOKEN }
+    );
+
+    await createdRefreshToken.save();
   } catch (err) {
     const error = new HttpError(
       "Logging in failed, please try again later.",
@@ -140,14 +161,15 @@ const login = async (req, res, next) => {
 
   res
     .status(201)
-    .cookie("token", token, {
+    .cookie("at", accessToken, {
       path: "/",
       expires: new Date(Date.now() + 1000 * 60 * 60),
       httpOnly: true,
     })
-    .cookie("LoggedIn", 1, {
+    .cookie("rt", refreshToken, {
       path: "/",
-      expires: new Date(Date.now() + 1000 * 60 * 60),
+      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
+      httpOnly: true,
     })
     .send();
 };
@@ -177,39 +199,7 @@ const getUserById = async (req, res, next) => {
 };
 
 const getTokenAndCheck = async (req, res, next) => {
-  if (diffDate(req.cookies.Expires, "min") <= 10) {
-    let token;
-
-    try {
-      token = jwt.sign(
-        {
-          userId: req.userData.userId,
-        },
-        JWT_PRIVATE_KEY,
-        { expiresIn: JWT_EXPIRES }
-      );
-    } catch (err) {
-      const error = new HttpError(
-        "Logging in failed, please try again later.",
-        500
-      );
-      return next(error);
-    }
-    res
-      .status(201)
-      .cookie("token", token, {
-        path: "/",
-        expires: new Date(Date.now() + 1000 * 60 * 60),
-        httpOnly: true,
-      })
-      .cookie("LoggedIn", 1, {
-        path: "/",
-        expires: new Date(Date.now() + 1000 * 60 * 60),
-      })
-      .send();
-  } else {
-    res.status(201).send();
-  }
+  res.status(200).send();
 };
 
 const editUser = async (req, res, next) => {
@@ -349,15 +339,15 @@ const deleteUser = async (req, res, next) => {
 
   // 일정만 등록한 경우엔 삭제 가능. 일정이 전부 삭제되진 않음.
   //res.clearCookie("XSRF-TOKEN");
-  res.clearCookie("token");
-  res.clearCookie("LoggedIn");
+  res.clearCookie("at");
+  res.clearCookie("rt");
   res.status(200).send();
 };
 
 const logout = (req, res, next) => {
   //res.clearCookie("XSRF-TOKEN");
-  res.clearCookie("token");
-  res.clearCookie("LoggedIn");
+  res.clearCookie("at");
+  res.clearCookie("rt");
   res.status(200).send();
 };
 

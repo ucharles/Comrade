@@ -65,6 +65,40 @@ const getCalendarByCalendarId = async (req, res, next) => {
   });
 };
 
+const getCalendarAdminByUserId = async (req, res, next) => {
+  let userWithCalendars;
+  try {
+    userWithCalendars = await User.findById(req.userData.userId)
+      .populate({ path: "calendars", select: "_id members" })
+      .exec();
+  } catch (err) {
+    const error = new HttpError("Getting data failed, please try again", 500);
+    return next(error);
+  }
+
+  if (!userWithCalendars || userWithCalendars.calendars.length === 0) {
+    return next(
+      new HttpError("Could not find calendars for the privided id", 404)
+    ); // will be trigger: error handling middleware
+  }
+
+  let calendarAdmin = [];
+  for (let calendar of userWithCalendars.calendars) {
+    let member = calendar.members.find(
+      (v) => v._id.toString() === req.userData.userId
+    );
+
+    calendarAdmin.push({
+      calendarId: calendar._id,
+      isAdmin: member.administrator,
+    });
+  }
+
+  res.status(201).json({
+    calendarsAdmin: calendarAdmin,
+  });
+};
+
 const createCalendar = async (req, res, next) => {
   // 달력 생성
   const errors = validationResult(req);
@@ -545,6 +579,7 @@ const deleteUserFromCalendar = async (req, res, next) => {
 
 exports.getCalendarsByUserId = getCalendarsByUserId;
 exports.getCalendarByCalendarId = getCalendarByCalendarId;
+exports.getCalendarAdminByUserId = getCalendarAdminByUserId;
 exports.createCalendar = createCalendar;
 exports.updateCalendarById = updateCalendarById;
 exports.deleteCalendar = deleteCalendar;
