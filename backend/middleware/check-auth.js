@@ -1,7 +1,6 @@
 const jwt = require("jsonwebtoken");
 const moment = require("moment-timezone");
 const HttpError = require("../util/http-error");
-const { diffDate } = require("../util/diff-date");
 const Token = require("../models/token-model");
 
 const { v4: uuid } = require("uuid");
