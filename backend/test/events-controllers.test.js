@@ -150,10 +150,10 @@ beforeAll(async () => {
 
 const app = createServer();
 
-describe("GET /api/events/calendar/:calendarId/date/:date/:timezone", () => {
+describe("GET /api/events/calendar/:calendarId/int-day/:date/:timezone", () => {
   test("schedule test", async () => {
     const url =
-      `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/date/2022-01-22/` +
+      `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/int-day/2022-01-22/` +
       encodeURIComponent("Asia/Seoul");
 
     // Event.find({}, function (err, docs) {
@@ -167,7 +167,8 @@ describe("GET /api/events/calendar/:calendarId/date/:date/:timezone", () => {
       .get(url)
       .then(async (res) => {
         expect(res.statusCode).toBe(201);
-        expect(res.body.events).toStrictEqual([
+        expect(res.body.events).toStrictEqual("");
+        expect(res.body.intersection).toStrictEqual([
           {
             depth: 3,
             endTime: "2022-01-22T12:45:00.000Z",
@@ -284,10 +285,10 @@ describe("GET /api/events/calendar/:calendarId/date/:date/:timezone", () => {
   });
 });
 
-describe("GET /api/events/calendar/:calendarId/month/:month/:timezone", () => {
+describe("GET /api/events/calendar/:calendarId/int-month/:date/:timezone", () => {
   test("schedule test", async () => {
     const url =
-      `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/month/2022-01/` +
+      `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/int-month/2022-01-01/` +
       encodeURIComponent("Asia/Seoul");
 
     // Event.find({}, function (err, docs) {

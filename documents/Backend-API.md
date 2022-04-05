@@ -107,11 +107,10 @@ cookie: at(userId), rt(uuid)
     - date, 형식은 YYYY-MM-DD
   - 추후 구현: 중복 시간 체크 필요
 - **/api/events/delete**
-  - (미구현)
   - cookie: at(userId)
   - POST 요청이지만 DELETE를 수행함
     - DELETE 요청은 body를 갖지 않음
-  - body: {events:[{(삭제할 event의 id가 포함된 객체)}]}
+  - body: {eventsId:[(삭제할 event의 id), (...), ...]}
 
 ---
 

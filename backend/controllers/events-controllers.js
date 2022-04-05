@@ -211,6 +211,7 @@ const generateIntersectionEventsByDay = (
   });
 };
 
+// 테스트용
 const getEvents = async (req, res, next) => {
   let events;
   try {
@@ -220,42 +221,66 @@ const getEvents = async (req, res, next) => {
     return next(error);
   }
 
-  res.json({
-    events: events.map((event) => event.toObject({ getters: true })),
+  res.status(200).json({
+    events,
   });
 };
 
-const getEventsByDate = async (req, res, next) => {
+const getEventsByMonth = async (req, res, next) => {
+  const userId = req.userData.userId;
+  const inputCalendar = req.params.calendarId;
   const inputDate = req.params.date;
-  // input: 달력 정보, 날짜, 유저의 위치 정보
+  const timezone = decodeURIComponent(req.params.timezone);
 
-  // check:
-  // 유효한 날짜 형식인지?
-  // 요청하는 달력이 이 유저가 속한 달력인지?
-  // 관리자인지?: 관리자면 일정 확정 권한을 줘야 함 <- 프론트가 할일?
+  // 입력된 날짜와 타임존이 유효한지 확인
+  if (!moment.tz(inputDate, timezone).isValid()) {
+    const error = new HttpError("Please check Date or Timezone.", 402);
+    return next(error);
+  }
 
-  // 필요한 정보:
-  // 입력받은 timezone 기준으로 일정을 계산
-  // 입력받은 날짜를 기준으로 starTime 혹은 endTime 가 그 날짜 안에 있는 경우
-  // 입력: 2021-01-01 -> start 가 2021-12-31이어도 end 가 2021-01-01에 있으면 추출 대상
-  // 달력: 속한 유저들
-  // 이벤트: 속한 유저들의 일정들
-
-  // 출력할 정보
-  // timezone 기준으로 추출한 달력에 속한 유저들의 일정
-  // 일정들의 교집합(계산)
-  //
+  inputDate = inputDate.substr(0, 7) + "-01";
 
   let events;
   try {
-    events = await Event.find().exec();
+    events = await Event.find({
+      creator: userId,
+      calendar: inputCalendar,
+      startTime: {
+        $gte: new Date(
+          moment.tz(inputDate + " 00:00", timezone).utc()
+        ).toISOString(),
+        $lt: new Date(
+          moment
+            .tz(inputDate + " 00:00", timezone)
+            .endOf("month")
+            .add({ hours: 23, minutes: 59 })
+            .utc()
+        ).toISOString(),
+      },
+    })
+      .sort({ startTime: 1, endTime: 1 })
+      .select({ title: 0, calendar: 0 })
+      .exec();
   } catch (err) {
     const error = new HttpError("Could not found events", 500);
     return next(error);
   }
 
-  res.json({
-    events: events.map((event) => event.toObject({ getters: true })),
+  // 제목 생성 필요?
+  // 1. HH:MM~HH:MM
+  // 2. HH:MM~ (OOm)
+  // 3. HH:MM~HH:MM (OOm)
+  for (element of events) {
+    let start = moment.tz(element.startTime, timezone).format("HH:mm");
+    let end = moment.tz(element.endTime, timezone).format("HH:mm");
+    let diff =
+      (new Date(end).getTime() - new Date(start).getTime()) / 1000 / 60;
+
+    element.title = `${start}~${end} (${diff}m)`;
+  }
+
+  res.status(200).json({
+    events,
   });
 };
 
@@ -302,7 +327,7 @@ const getIntersectionEventsByDay = async (req, res, next) => {
       },
     })
       .sort({ startTime: 1, endTime: 1 })
-      .select({ title: 0, calendar: 0 })
+      .select({ _id: 1, startTime: 1, endTime: 1, creator: 1 })
       .exec();
 
     calendarMembers = await Calendar.findById(inputCalendar)
@@ -338,7 +363,9 @@ const getIntersectionEventsByDay = async (req, res, next) => {
   );
   console.log(intersectionJson);
 
-  res.status(201).json({ events: intersectionJson.slice(0, 6) });
+  res
+    .status(201)
+    .json({ events: events, intersection: intersectionJson.slice(0, 6) });
 
   // events 변수 자체가 커서인듯...
   // https://stackoverflow.com/questions/37024829/cursor-map-toarray-vs-cursor-toarray-thenarray-array-map
@@ -391,9 +418,9 @@ const getIntersectionEventsByDay = async (req, res, next) => {
 };
 
 const getIntersectionEventsByMonth = async (req, res, next) => {
-  // input Data: 년월, Timezone, 캘린더 정보
+  // input Data: 년월일(), Timezone, 캘린더 정보
   const inputCalendar = req.params.calendarId;
-  let inputMonth = req.params.month;
+  let inputMonth = req.params.date;
   const timezone = decodeURIComponent(req.params.timezone);
 
   inputMonth = inputMonth.substr(0, 7) + "-01";
@@ -661,11 +688,11 @@ const createEvents = async (req, res, next) => {
 
 const deleteEvents = async (req, res, next) => {
   // POST 요청
-  const eventIds = req.params.events;
+  const eventsId = req.body.eventsId; // array
 
   try {
     await Event.deleteMany({
-      _id: { $in: eventIds },
+      _id: { $in: eventsId },
       creator: req.userData.userId,
     }).exec();
   } catch (err) {
@@ -676,8 +703,8 @@ const deleteEvents = async (req, res, next) => {
 };
 
 exports.getEvents = getEvents;
+exports.getEventsByMonth = getEventsByMonth;
 exports.createEvents = createEvents;
 exports.deleteEvents = deleteEvents;
-exports.getEventsByDate = getEventsByDate;
 exports.getIntersectionEventsByDay = getIntersectionEventsByDay;
 exports.getIntersectionEventsByMonth = getIntersectionEventsByMonth;

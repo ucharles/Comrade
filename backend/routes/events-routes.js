@@ -5,19 +5,24 @@ const checkAuth = require("../middleware/check-auth");
 
 const router = express.Router();
 
-// router.use(checkAuth);
+router.use(checkAuth);
 
+// 테스트용
 router.get("/", eventsControllers.getEvents);
 router.get(
-    "/calendar/:calendarId/date/:date/:timezone",
-    eventsControllers.getIntersectionEventsByDay
+  "/calendar/:calendarId/int-day/:date/:timezone",
+  eventsControllers.getIntersectionEventsByDay
 );
 router.get(
-    "/calendar/:calendarId/month/:month/:timezone",
-    eventsControllers.getIntersectionEventsByMonth
+  "/calendar/:calendarId/int-month/:date/:timezone",
+  eventsControllers.getIntersectionEventsByMonth
 );
-router.get("/user/:userId/:date/:timezone", eventsControllers.getEventsByDate);
+router.get(
+  "/calendar/:calendarId/one-user-month/:date/:timezone",
+  eventsControllers.getEventsByMonth
+);
 
 router.post("/", eventsControllers.createEvents);
+router.post("/delete", eventsControllers.deleteEvents);
 
 module.exports = router;
