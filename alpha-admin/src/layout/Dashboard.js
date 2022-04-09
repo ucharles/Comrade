@@ -67,6 +67,12 @@ export const Dashboard = () => {
     changeViewDate();
   }, [inputDate]);
 
+  const navigateToday = () => {
+    const calendarApi = fullCalendarRef.current.getApi();
+    calendarApi.today();
+    navigate("/calendar/1");
+  };
+
   const navigatePrevMonth = () => {
     const calendarApi = fullCalendarRef.current.getApi();
     let currentDate = calendarApi.getDate();
@@ -142,9 +148,13 @@ export const Dashboard = () => {
                 titleFormat="YYYY/MM"
                 headerToolbar={{
                   left: "title",
-                  right: "today customPrev,customNext",
+                  right: "customToday customPrev,customNext",
                 }}
                 customButtons={{
+                  customToday: {
+                    text: " Today ",
+                    click: navigateToday,
+                  },
                   customPrev: {
                     text: " < Prev ",
                     click: navigatePrevMonth,
