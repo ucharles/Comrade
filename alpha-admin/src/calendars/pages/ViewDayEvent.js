@@ -169,7 +169,7 @@ const ViewDayEvent = (props) => {
       <Card>
         <Box sx={{ style: "flex" }}>
           <Counter />
-          <Button href="#" variant="contained">
+          <Button href="/calendar/1" variant="contained">
             Calendar
           </Button>
         </Box>
