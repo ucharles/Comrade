@@ -13,7 +13,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
 import { useLogout, Menu, MenuItemLink } from "react-admin";
-import AuthContext from "../shared/util/auth-context";
+//import AuthContext from "../shared/util/auth-context";
 
 function stringToColor(string) {
   let hash = 0;
@@ -80,7 +80,7 @@ const MyMenu = (props) => {
   const logout = useLogout();
   const handleLogout = () => logout();
 
-  const authCtx = useContext(AuthContext);
+  //const authCtx = useContext(AuthContext);
 
   return (
     <div>
@@ -131,7 +131,7 @@ const MyMenu = (props) => {
           leftIcon={<SettingsIcon />}
         />
         <MenuItemLink
-          to="/"
+          to=""
           primaryText="Logout"
           leftIcon={<LogoutIcon />}
           onClick={handleLogout}
