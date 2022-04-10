@@ -29,7 +29,7 @@ module.exports = async (req, res, next) => {
     else {
       let storedToken;
       try {
-        storedToken = await Token.find({ uuid: decodedRefreshToken.uuid });
+        storedToken = await Token.findOne({ uuid: decodedRefreshToken.uuid });
       } catch (err) {
         const error = new HttpError("DB error, please try again.", 500);
         return next(error);
