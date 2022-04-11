@@ -61,12 +61,12 @@ export const EditMemberModal = (props) => {
         aria-describedby="modal-modal-description"
       >
         <Box
+          width={{ xs: 290, sm: 300, lg: 500 }}
           sx={{
             position: "absolute",
             top: "50%",
             left: "50%",
             transform: "translate(-50%, -50%)",
-            width: 400,
             height: 500,
             bgcolor: "background.paper",
             boxShadow: 24,
@@ -122,12 +122,12 @@ export const AddMemberModal = (props) => {
       aria-describedby="modal-modal-description"
     >
       <Box
+        width={{ xs: 290, sm: 300, lg: 500 }}
         sx={{
           position: "absolute",
           top: "50%",
           left: "50%",
           transform: "translate(-50%, -50%)",
-          width: 400,
           bgcolor: "background.paper",
           boxShadow: 24,
           p: 4,
