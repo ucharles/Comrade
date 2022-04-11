@@ -1,37 +1,19 @@
-import React, { useState } from "react";
-import { Layout, MenuItemLink } from "react-admin";
+import React, { useState, useContext } from "react";
 import Divider from "@mui/material/Divider";
-import ListSubheader from "@mui/material/ListSubheader";
 import Collapse from "@mui/material/Collapse";
-import List from "@mui/material/List";
-import BookIcon from "@mui/icons-material/Book";
-import SettingsIcon from "@mui/icons-material/Settings";
-import ChatBubbleIcon from "@mui/icons-material/ChatBubble";
-import LabelIcon from "@mui/icons-material/Label";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import Avatar from "@mui/material/Avatar";
 import ListItemButton from "@mui/material/ListItemButton";
+import SettingsIcon from "@mui/icons-material/Settings";
+import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
-import DraftsIcon from "@mui/icons-material/Drafts";
-import SendIcon from "@mui/icons-material/Send";
 import ExpandLess from "@mui/icons-material/ExpandLess";
 import ExpandMore from "@mui/icons-material/ExpandMore";
-import StarBorder from "@mui/icons-material/StarBorder";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
-
-const menuItems = [
-  {
-    name: "posts",
-    text: "Posts",
-  },
-  { name: "comments", text: "Comments", icon: <ChatBubbleIcon /> },
-  { name: "tags", text: "Tags", icon: <LabelIcon /> },
-  { name: "my-profile", text: "My profile", icon: <SettingsIcon /> },
-];
+import { useLogout, Menu, MenuItemLink } from "react-admin";
+//import AuthContext from "../shared/util/auth-context";
 
 function stringToColor(string) {
   let hash = 0;
@@ -64,7 +46,27 @@ function stringAvatar(name, width, height) {
   };
 }
 
-const MyMenu = ({ onMenuClick, logout }) => {
+// JSON 형식으로 받을 캘린더들(더미)
+let calendars = [
+  {
+    _id: "61d6cf33bffd707ad9702853",
+    name: "dummy calendar1",
+    description: "description1",
+    iconSrc: "https://www.1999.co.jp/itbig81/10812608.jpg",
+    creator: "Captain1",
+    timestamps: "2022-01-05 13:00",
+  },
+  {
+    _id: "61d6cf33bffd707ad9702854",
+    name: "dummy calendar2",
+    description: "description222222",
+    iconSrc: "",
+    creator: "Captain2",
+    timestamps: "2022-01-06 13:00",
+  },
+];
+
+const MyMenu = (props) => {
   const [open, setOpen] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState();
 
@@ -75,115 +77,66 @@ const MyMenu = ({ onMenuClick, logout }) => {
   const handleClick = () => {
     setOpen(!open);
   };
+  const logout = useLogout();
+  const handleLogout = () => logout();
+
+  //const authCtx = useContext(AuthContext);
 
   return (
     <div>
-      <List
-        sx={{ width: "250px" }}
-        component="nav"
-        // aria-labelledby="nested-list-subheader"
-        // subheader={
-        //   <ListSubheader component="div" id="nested-list-subheader">
-        //     Nested List Items
-        //   </ListSubheader>
-        // }
-      >
-        <ListItemButton onClick={handleClick}>
-          <ListItemIcon>
-            <CalendarTodayIcon />
-          </ListItemIcon>
-          <ListItemText primary="Calendar" />
-          {open ? <ExpandLess /> : <ExpandMore />}
-        </ListItemButton>
+      <ListItemButton onClick={handleClick}>
+        <ListItemIcon>
+          <CalendarTodayIcon />
+        </ListItemIcon>
+        <ListItemText primary="Calendar" />
+        {open ? <ExpandLess /> : <ExpandMore />}
+      </ListItemButton>
+
+      <Menu {...props}>
         <Collapse in={open} timeout="auto" unmountOnExit>
-          <List component="div" disablePadding>
-            <ListItemButton
-              component="a"
-              href="/#"
-              selected={selectedIndex === 0}
-              onClick={(event) => handleListItemClick(event, 0)}
-            >
-              <ListItemIcon>
-                <Avatar
-                  sx={{ width: 35, height: 35 }}
-                  src="https://www.1999.co.jp/itbig81/10812608.jpg"
-                />
-              </ListItemIcon>
-              <ListItemText primary="Calendar 1" />
-            </ListItemButton>
-
-            <ListItemButton
-              component="a"
-              href="/#"
-              selected={selectedIndex === 1}
-              onClick={(event) => handleListItemClick(event, 1)}
-            >
-              <ListItemIcon>
-                <Avatar {...stringAvatar("Calendar 2", 35, 35)} />
-              </ListItemIcon>
-              <ListItemText primary="Calendar 2" />
-            </ListItemButton>
-          </List>
+          {calendars.map((calendar, index) => (
+            <MenuItemLink
+              key={calendar._id}
+              // 캘린더별 URL설정 필요
+              to="/"
+              selected={selectedIndex === index}
+              primaryText={calendar.name}
+              leftIcon={
+                calendar.iconSrc ? (
+                  <Avatar
+                    sx={{ width: 35, height: 35 }}
+                    src={calendar.iconSrc}
+                  />
+                ) : (
+                  <Avatar {...stringAvatar(calendar.name, 35, 35)} />
+                )
+              }
+            />
+          ))}
         </Collapse>
-
-        <ListItemButton
-          component="a"
-          href="/#/calendar/settings"
-          onClick={(event) => handleListItemClick(event, null)}
-        >
-          <ListItemIcon>
-            <EditIcon />
-          </ListItemIcon>
-          <ListItemText primary="Edit Calendars" />
-        </ListItemButton>
-
-        <ListItemButton
-          component="a"
-          href="/#/calendar/new"
-          onClick={(event) => handleListItemClick(event, null)}
-        >
-          <ListItemIcon>
-            <AddIcon />
-          </ListItemIcon>
-          <ListItemText primary="Create Calendar" />
-        </ListItemButton>
-
-        <Divider />
-
-        <ListItemButton
-          component="a"
-          href="/#/settings"
-          onClick={(event) => handleListItemClick(event, null)}
-        >
-          <ListItemIcon>
-            <SettingsIcon />
-          </ListItemIcon>
-          <ListItemText primary="Account Setting" />
-        </ListItemButton>
-
-        <ListItemButton component="a" href="/#/logout" onClick={logout}>
-          <ListItemIcon>
-            <LogoutIcon />
-          </ListItemIcon>
-          <ListItemText primary="Logout" />
-        </ListItemButton>
-
-        {/* {menuItems.map((item) => (
-          <MenuItemLink
-            key={item.name}
-            to={`/${item.name}`}
-            primaryText={item.text}
-            leftIcon={
-              item.icon ? (
-                <Avatar>{item.icon}</Avatar>
-              ) : (
-                <Avatar {...stringAvatar(item.name)} />
-              )
-            }
-            onClick={onMenuClick}
-          />
-        ))} */}
-      </List>
+        <MenuItemLink
+          to="/calendar/settings"
+          primaryText="Edit Calendars"
+          leftIcon={<EditIcon />}
+        />
+        <MenuItemLink
+          to="/calendar/new"
+          primaryText="Create Calendars"
+          leftIcon={<AddIcon />}
+        />
+        <Divider variant="middle" />
+        <MenuItemLink
+          to="/settings"
+          primaryText="Account Setting"
+          leftIcon={<SettingsIcon />}
+        />
+        <MenuItemLink
+          to=""
+          primaryText="Logout"
+          leftIcon={<LogoutIcon />}
+          onClick={handleLogout}
+        />
+      </Menu>
     </div>
   );
 };
