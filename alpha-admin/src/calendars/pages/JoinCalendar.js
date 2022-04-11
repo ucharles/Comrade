@@ -10,7 +10,6 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
-import TimezoneSelect from "react-timezone-select";
 
 const theme = createTheme();
 
@@ -20,17 +19,13 @@ export default function JoinCalendar() {
     const data = new FormData(event.currentTarget);
     console.log({
       nickname: data.get("nickname"),
-      timezone: data.get("timezone"),
+      role: data.get("role"),
     });
   };
 
   const resetHandler = (event) => {
     event.preventDefault();
   };
-
-  const [timezone, setTimezone] = useState(
-    Intl.DateTimeFormat().resolvedOptions().timeZone
-  );
 
   return (
     <ThemeProvider theme={theme}>
@@ -44,29 +39,21 @@ export default function JoinCalendar() {
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
-            }}
-          >
-            <Typography component="h1" variant="h5">
-              Join the calendar
+            }}>
+            <Typography component="h1" variant="h4">
+              Join Calendar
             </Typography>
             <Box
               component="form"
               noValidate
               onSubmit={handleSubmit}
-              sx={{ mt: 3 }}
-            >
+              sx={{ mt: 3 }}>
               <Grid container spacing={2}>
                 {/* 캘린더명 표시 필요 */}
                 <Grid item xs={12}>
-                  Calendar name
-                  <Typography component="h1" variant="h5">
+                  Calendar Name
+                  <Typography component="h2" variant="h5">
                     Calendar 1
-                  </Typography>
-                </Grid>
-                <Grid item xs={12}>
-                  Role
-                  <Typography component="h1" variant="h5">
-                    Member
                   </Typography>
                 </Grid>
                 <Grid item xs={12}>
@@ -79,20 +66,14 @@ export default function JoinCalendar() {
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  Timezone
-                  <TimezoneSelect
-                    value={timezone}
-                    onChange={setTimezone}
-                    name="timezone"
-                  />
+                  <TextField fullWidth id="role" label="Role" name="role" />
                 </Grid>
               </Grid>
               <Button
                 type="submit"
                 fullWidth
                 variant="contained"
-                sx={{ mt: 3, mb: 1 }}
-              >
+                sx={{ mt: 3, mb: 1 }}>
                 Join
               </Button>
               <Button
@@ -100,8 +81,7 @@ export default function JoinCalendar() {
                 fullWidth
                 variant="outlined"
                 sx={{ mt: 1, mb: 1 }}
-                onClick={resetHandler}
-              >
+                onClick={resetHandler}>
                 Reset
               </Button>
             </Box>

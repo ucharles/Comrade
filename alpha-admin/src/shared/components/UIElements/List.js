@@ -7,7 +7,6 @@ import ListItemAvatar from "@mui/material/ListItemAvatar";
 import Avatar from "@mui/material/Avatar";
 import Typography from "@mui/material/Typography";
 import { Box } from "@mui/material";
-import { FixedSizeList } from "react-window";
 
 export default function AlignItemsList() {
   return (
