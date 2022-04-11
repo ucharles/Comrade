@@ -171,6 +171,10 @@ const login = async (req, res, next) => {
       expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
       httpOnly: true,
     })
+    .cookie("loggedIn", 1, {
+      path: "/",
+      expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
+    })
     .send();
 };
 
@@ -199,7 +203,66 @@ const getUserById = async (req, res, next) => {
 };
 
 const getTokenAndCheck = async (req, res, next) => {
-  res.status(200).send();
+  try {
+    const accessToken = req.cookies.at;
+    const refreshToken = req.cookies.rt;
+
+    // 리프레시 토큰이 없는 경우
+    if (!refreshToken) {
+      throw new Error("Authentication failed!");
+    }
+    const decodedRefreshToken = jwt.verify(refreshToken, JWT_PRIVATE_KEY);
+
+    if (!accessToken) {
+      let storedToken;
+      try {
+        storedToken = await Token.findOne({ uuid: decodedRefreshToken.uuid });
+      } catch (err) {
+        const error = new HttpError("DB error, please try again.", 500);
+        return next(error);
+      }
+
+      if (storedToken.userId === undefined) {
+        const error = new HttpError("Can't create Access Token.", 403);
+        return next(error);
+      }
+
+      req.userData = { userId: storedToken.userId };
+
+      // 액세스 토큰 재발급
+      let newAccessToken;
+
+      try {
+        newAccessToken = jwt.sign(
+          {
+            userId: req.userData.userId,
+          },
+          JWT_PRIVATE_KEY,
+          { expiresIn: JWT_EXPIRES_ACCESS_TOKEN }
+        );
+      } catch (err) {
+        const error = new HttpError(
+          "Logging in failed, please try again later.",
+          500
+        );
+        return next(error);
+      }
+      res
+        .status(200)
+        .cookie("at", newAccessToken, {
+          path: "/",
+          expires: new Date(Date.now() + 1000 * 60 * 60),
+          httpOnly: true,
+        })
+        .send();
+    } else if (accessToken) {
+      jwt.verify(accessToken, JWT_PRIVATE_KEY);
+      res.status(200).send();
+    }
+  } catch (err) {
+    const error = new HttpError("Authentication failed!", 403);
+    return next(error);
+  }
 };
 
 const editUser = async (req, res, next) => {
@@ -346,6 +409,7 @@ const deleteUser = async (req, res, next) => {
 
 const logout = (req, res, next) => {
   //res.clearCookie("XSRF-TOKEN");
+  res.clearCookie("loggedIn");
   res.clearCookie("at");
   res.clearCookie("rt");
   res.status(200).send();
