@@ -1,5 +1,8 @@
-// eslint-disable-next-line
-export default {
+import { Cookies } from "react-cookie";
+
+const cookies = new Cookies();
+
+const authProvider = {
   login: ({ email, password }) => {
     const request = new Request(
       process.env.REACT_APP_BACKEND_URL + "/users/login",
@@ -27,12 +30,11 @@ export default {
       });
   },
 
-  checkAuth: () => {
-    return Promise.resolve();
-  },
+  checkAuth: async () => {
+    if (!cookies.get("loggedIn")) {
+      return Promise.reject();
+    }
 
-  // checkAuth 대신 사용
-  getPermissions: () => {
     const request = new Request(
       process.env.REACT_APP_BACKEND_URL + "/users/token-check",
       { method: "GET", credentials: "include" }
@@ -48,6 +50,10 @@ export default {
       .catch(() => {
         throw new Error();
       });
+  },
+
+  getPermissions: () => {
+    return Promise.resolve();
   },
 
   logout: () => {
@@ -76,3 +82,5 @@ export default {
     return Promise.resolve();
   },
 };
+
+export default authProvider;

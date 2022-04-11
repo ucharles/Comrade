@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Title, useAuthState, Loading } from "react-admin";
+import DatePicker, { Calendar, DateObject } from "react-multi-date-picker";
+import TimePickerPlugin from "react-multi-date-picker/plugins/time_picker";
 import {
   Card,
   Grid,
@@ -12,14 +15,14 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
-import DatePicker, { Calendar, DateObject } from "react-multi-date-picker";
-import TimePickerPlugin from "react-multi-date-picker/plugins/time_picker";
+
 import { useHttpClient } from "../../shared/hooks/http-hook";
-import { Title } from "react-admin";
 
 const dateFormat = "YYYY-MM-DD";
 
 const AddEvents = () => {
+  const { loading, authenticated } = useAuthState();
+
   const { sendRequest } = useHttpClient();
 
   // console.log(Intl.DateTimeFormat().resolvedOptions().timeZone);
@@ -76,116 +79,118 @@ const AddEvents = () => {
     setEndTime(null);
   };
 
-  return (
-    <React.Fragment>
-      <Card sx={{ height: "100%" }}>
-        <Title title={process.env.REACT_APP_TITLE} />
+  if (loading) {
+    return <Loading />;
+  }
+  if (authenticated) {
+    return (
+      <React.Fragment>
+        <Card sx={{ height: "100%" }}>
+          <Title title={process.env.REACT_APP_TITLE} />
 
-        <Container component="main" maxWidth="sm">
-          <CssBaseline />
-
-          <Box
-            sx={{
-              marginTop: 3,
-              display: "flex",
-              flexDirection: "column",
-            }}
-          >
-            <Typography component="h1" variant="h5">
-              Add Event
-            </Typography>
-
-            <Box sx={{ mt: 2 }}>
-              <InputLabel id="start-day-selector">Start Day</InputLabel>
-              <Select
-                id="startDaySelector"
-                onChange={weekStartDayHandler}
-                value={weekStartDayIndex}
-              >
-                <MenuItem value="0">Sun</MenuItem>
-                <MenuItem value="1">Mon</MenuItem>
-                <MenuItem value="2">Tue</MenuItem>
-                <MenuItem value="3">Wed</MenuItem>
-                <MenuItem value="4">Thu</MenuItem>
-                <MenuItem value="5">Fri</MenuItem>
-                <MenuItem value="6">Sat</MenuItem>
-              </Select>
-            </Box>
+          <Container component="main" maxWidth="sm">
+            <CssBaseline />
 
             <Box
-              component="form"
-              onSubmit={addEventSubmitHandler}
-              sx={{ mt: 3 }}
-            >
-              <Grid container spacing={2} alignItems="center">
-                <Grid item xs={12} sm={6}>
-                  <Calendar
-                    multiple
-                    value={dateValue}
-                    onChange={setDateValue}
-                    format={dateFormat}
-                    sort
-                    weekStartDayIndex={weekStartDayIndex}
-                    showOtherDays={true}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <Grid container spacing={2} justifyContent="center">
-                    <Grid item xs={12}>
-                      <Typography>Start Time:</Typography>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <DatePicker
-                        value={startTime}
-                        onChange={setStartTime}
-                        disableDayPicker
-                        format="HH:mm"
-                        onClose={() => {
-                          setStartTime(setTimeStep(startTime, 15));
-                        }}
-                        plugins={[<TimePickerPlugin hideSeconds />]}
-                      />
-                    </Grid>
-                    <Grid item xs={12}>
-                      <Typography>End Time</Typography>
-                    </Grid>
-                    <Grid item xs={12}>
-                      <DatePicker
-                        value={endTime}
-                        onChange={setEndTime}
-                        disableDayPicker
-                        format="HH:mm"
-                        onClose={() => {
-                          setEndTime(setTimeStep(endTime, 15));
-                        }}
-                        plugins={[<TimePickerPlugin hideSeconds />]}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Button type="submit" variant="contained" fullWidth>
-                        Submit
-                      </Button>
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <Button
-                        type="button"
-                        fullWidth
-                        variant="outlined"
-                        onClick={dateResetHandler}
-                        sx={{ mb: 2 }}
-                      >
-                        Reset
-                      </Button>
+              sx={{
+                marginTop: 3,
+                display: "flex",
+                flexDirection: "column",
+              }}>
+              <Typography component="h1" variant="h5">
+                Add Event
+              </Typography>
+
+              <Box sx={{ mt: 2 }}>
+                <InputLabel id="start-day-selector">Start Day</InputLabel>
+                <Select
+                  id="startDaySelector"
+                  onChange={weekStartDayHandler}
+                  value={weekStartDayIndex}>
+                  <MenuItem value="0">Sun</MenuItem>
+                  <MenuItem value="1">Mon</MenuItem>
+                  <MenuItem value="2">Tue</MenuItem>
+                  <MenuItem value="3">Wed</MenuItem>
+                  <MenuItem value="4">Thu</MenuItem>
+                  <MenuItem value="5">Fri</MenuItem>
+                  <MenuItem value="6">Sat</MenuItem>
+                </Select>
+              </Box>
+
+              <Box
+                component="form"
+                onSubmit={addEventSubmitHandler}
+                sx={{ mt: 3 }}>
+                <Grid container spacing={2} alignItems="center">
+                  <Grid item xs={12} sm={6}>
+                    <Calendar
+                      multiple
+                      value={dateValue}
+                      onChange={setDateValue}
+                      format={dateFormat}
+                      sort
+                      weekStartDayIndex={weekStartDayIndex}
+                      showOtherDays={true}
+                    />
+                  </Grid>
+                  <Grid item xs={12} sm={6}>
+                    <Grid container spacing={2} justifyContent="center">
+                      <Grid item xs={12}>
+                        <Typography>Start Time:</Typography>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <DatePicker
+                          value={startTime}
+                          onChange={setStartTime}
+                          disableDayPicker
+                          format="HH:mm"
+                          onClose={() => {
+                            setStartTime(setTimeStep(startTime, 15));
+                          }}
+                          plugins={[<TimePickerPlugin hideSeconds />]}
+                        />
+                      </Grid>
+                      <Grid item xs={12}>
+                        <Typography>End Time</Typography>
+                      </Grid>
+                      <Grid item xs={12}>
+                        <DatePicker
+                          value={endTime}
+                          onChange={setEndTime}
+                          disableDayPicker
+                          format="HH:mm"
+                          onClose={() => {
+                            setEndTime(setTimeStep(endTime, 15));
+                          }}
+                          plugins={[<TimePickerPlugin hideSeconds />]}
+                        />
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Button type="submit" variant="contained" fullWidth>
+                          Submit
+                        </Button>
+                      </Grid>
+                      <Grid item xs={12} sm={6}>
+                        <Button
+                          type="button"
+                          fullWidth
+                          variant="outlined"
+                          onClick={dateResetHandler}
+                          sx={{ mb: 2 }}>
+                          Reset
+                        </Button>
+                      </Grid>
                     </Grid>
                   </Grid>
                 </Grid>
-              </Grid>
+              </Box>
             </Box>
-          </Box>
-        </Container>
-      </Card>
-    </React.Fragment>
-  );
+          </Container>
+        </Card>
+      </React.Fragment>
+    );
+  }
+  return null;
 };
 
 export default AddEvents;
