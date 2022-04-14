@@ -36,10 +36,10 @@ router.post(
 );
 router.get("/logout", usersControllers.logout);
 
+router.get("/token-check", usersControllers.getTokenAndCheck);
 router.use(checkAuth);
 
 router.get("/", usersControllers.getUserById);
-router.get("/token-check", usersControllers.getTokenAndCheck);
 
 router.patch(
   "/",

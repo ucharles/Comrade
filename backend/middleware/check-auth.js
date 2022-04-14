@@ -105,11 +105,16 @@ module.exports = async (req, res, next) => {
         return next(error);
       }
 
-      res.cookie("rt", newRefreshToken, {
-        path: "/",
-        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
-        httpOnly: true,
-      });
+      res
+        .cookie("rt", newRefreshToken, {
+          path: "/",
+          expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
+          httpOnly: true,
+        })
+        .cookie("loggedIn", 1, {
+          path: "/",
+          expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
+        });
     }
 
     next();

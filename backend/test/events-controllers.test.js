@@ -1,8 +1,7 @@
 const createServer = require("../app");
 const request = require("supertest");
 const mongoose = require("mongoose");
-const jwt = require("jsonwebtoken");
-const { cookieSplit } = require("../util/cookie-spliter");
+const bcrypt = require("bcryptjs");
 
 const Event = require("../models/event-model");
 const Calendar = require("../models/calendar-model");
@@ -32,21 +31,23 @@ beforeAll(async () => {
   const userId3 = new mongoose.Types.ObjectId("5cabe64dcf0d4447fa60f5e7");
   const userId4 = new mongoose.Types.ObjectId("5cabe64dcf0d4447fa60f5e6");
   const calendarId = new mongoose.Types.ObjectId("5cabe64dcf0d4447fa60f5e2");
+  const calendarId2 = new mongoose.Types.ObjectId("5cabe64dcf0d4447fa60f5e3");
+  const password = await bcrypt.hash("123123", 12);
 
   await User.insertMany([
     {
       _id: userId,
       username: "user1",
       email: "hhh1@hhh.com",
-      password: "123123",
+      password,
       image: "helpme1",
-      calendars: [calendarId],
+      calendars: [calendarId, calendarId2],
     },
     {
       _id: userId2,
       username: "user2",
       email: "hhh2@hhh.com",
-      password: "123123",
+      password,
       image: "helpme2",
       calendars: [calendarId],
     },
@@ -54,7 +55,7 @@ beforeAll(async () => {
       _id: userId3,
       username: "user3",
       email: "hhh3@hhh.com",
-      password: "123123",
+      password,
       image: "helpme3",
       calendars: [calendarId],
     },
@@ -62,13 +63,13 @@ beforeAll(async () => {
       _id: userId4,
       username: "user4",
       email: "hhh4@hhh.com",
-      password: "123123",
+      password,
       image: "helpme4",
       calendars: [calendarId],
     },
   ])
     .then(function () {
-      console.log("Calendar Data inserted"); // Success
+      console.log("User Data inserted"); // Success
     })
     .catch(function (error) {
       console.log(error); // Failure
@@ -85,6 +86,14 @@ beforeAll(async () => {
         { _id: userId4, nickname: "he4", role: "war", administrator: false },
       ],
       owner: userId3,
+    },
+    {
+      _id: calendarId2,
+      name: "calendar 2",
+      members: [
+        { _id: userId, nickname: "he1", role: "nin", administrator: true },
+      ],
+      owner: userId,
     },
   ])
     .then(function () {
@@ -150,21 +159,43 @@ beforeAll(async () => {
 
 const app = createServer();
 
+describe("GET /api/events/calendar/:calendarId/one-user-month/:date/:timezone", () => {
+  test("schedule test", async () => {
+    const loginResponse = await request(app)
+      .post(`/api/users/login`)
+      .send({ email: "hhh1@hhh.com", password: "123123" });
+
+    const cookie = loginResponse.headers["set-cookie"];
+
+    const url =
+      `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/one-user-month/2022-01-22~2022-02-01/` +
+      encodeURIComponent("Asia/Seoul");
+
+    await request(app)
+      .get(url)
+      .set({ cookie: cookie })
+      .then(async (res) => {
+        expect(res.body.events).toStrictEqual("");
+        expect(res.statusCode).toBe(201);
+      });
+  });
+});
+
 describe("GET /api/events/calendar/:calendarId/int-day/:date/:timezone", () => {
   test("schedule test", async () => {
+    const loginResponse = await request(app)
+      .post(`/api/users/login`)
+      .send({ email: "hhh1@hhh.com", password: "123123" });
+
+    const cookie = loginResponse.headers["set-cookie"];
+
     const url =
       `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/int-day/2022-01-22/` +
       encodeURIComponent("Asia/Seoul");
 
-    // Event.find({}, function (err, docs) {
-    //   if (err) throw err;
-    //   console.log(JSON.stringify(docs));
-    //   // or:
-    //   console.log("%s", docs);
-    // }).exec();
-
     await request(app)
       .get(url)
+      .set({ cookie: cookie })
       .then(async (res) => {
         expect(res.statusCode).toBe(201);
         expect(res.body.events).toStrictEqual("");
@@ -287,19 +318,19 @@ describe("GET /api/events/calendar/:calendarId/int-day/:date/:timezone", () => {
 
 describe("GET /api/events/calendar/:calendarId/int-month/:date/:timezone", () => {
   test("schedule test", async () => {
+    const loginResponse = await request(app)
+      .post(`/api/users/login`)
+      .send({ email: "hhh1@hhh.com", password: "123123" });
+
+    const cookie = loginResponse.headers["set-cookie"];
+
     const url =
       `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/int-month/2022-01-01/` +
       encodeURIComponent("Asia/Seoul");
 
-    // Event.find({}, function (err, docs) {
-    //   if (err) throw err;
-    //   console.log(JSON.stringify(docs));
-    //   // or:
-    //   console.log("%s", docs);
-    // }).exec();
-
     await request(app)
       .get(url)
+      .set({ cookie: cookie })
       .then(async (res) => {
         expect(res.statusCode).toBe(201);
         expect(res.body.events).toStrictEqual([

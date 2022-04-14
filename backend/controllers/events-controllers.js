@@ -169,10 +169,10 @@ const generateIntersectionEventsByDay = (
             // 교집합 정보 작성
             intersectionJson.push({
               id: uuid(),
-              start: moment
+              startTime: moment
                 .tz(events[0].startTime, timezone)
                 .add(intersectionStart[i] * divMinute, "minutes"),
-              end: moment
+              endTime: moment
                 .tz(events[0].startTime, timezone)
                 .add(timeDivIndex * divMinute, "minutes"),
               members: {
@@ -229,16 +229,18 @@ const getEvents = async (req, res, next) => {
 const getEventsByMonth = async (req, res, next) => {
   const userId = req.userData.userId;
   const inputCalendar = req.params.calendarId;
-  const inputDate = req.params.date;
+  const inputStartDate = req.params.date.split("~")[0];
+  const inputEndDate = req.params.date.split("~")[1];
   const timezone = decodeURIComponent(req.params.timezone);
 
   // 입력된 날짜와 타임존이 유효한지 확인
-  if (!moment.tz(inputDate, timezone).isValid()) {
+  if (
+    !moment.tz(inputStartDate, timezone).isValid() ||
+    !moment.tz(inputEndDate, timezone).isValid()
+  ) {
     const error = new HttpError("Please check Date or Timezone.", 402);
     return next(error);
   }
-
-  inputDate = inputDate.substr(0, 7) + "-01";
 
   let events;
   try {
@@ -246,20 +248,14 @@ const getEventsByMonth = async (req, res, next) => {
       creator: userId,
       calendar: inputCalendar,
       startTime: {
-        $gte: new Date(
-          moment.tz(inputDate + " 00:00", timezone).utc()
-        ).toISOString(),
+        $gte: new Date(moment.tz(inputStartDate, timezone).utc()).toISOString(),
         $lt: new Date(
-          moment
-            .tz(inputDate + " 00:00", timezone)
-            .endOf("month")
-            .add({ hours: 23, minutes: 59 })
-            .utc()
+          moment.tz(inputEndDate, timezone).add(1, "day").utc()
         ).toISOString(),
       },
     })
       .sort({ startTime: 1, endTime: 1 })
-      .select({ title: 0, calendar: 0 })
+      .select({ _id: 1, startTime: 1, endTime: 1, creator: 1, calendar: 1 })
       .exec();
   } catch (err) {
     const error = new HttpError("Could not found events", 500);
@@ -271,12 +267,20 @@ const getEventsByMonth = async (req, res, next) => {
   // 2. HH:MM~ (OOm)
   // 3. HH:MM~HH:MM (OOm)
   for (element of events) {
-    let start = moment.tz(element.startTime, timezone).format("HH:mm");
-    let end = moment.tz(element.endTime, timezone).format("HH:mm");
-    let diff =
-      (new Date(end).getTime() - new Date(start).getTime()) / 1000 / 60;
+    let start = moment.tz(element.startTime, timezone);
+    let end = moment.tz(element.endTime, timezone);
+    let diff = end.diff(start) / 1000 / 60;
 
-    element.title = `${start}~${end} (${diff}m)`;
+    let hour = parseInt(diff / 60);
+    let min = diff % 60;
+
+    let timeAmount = "";
+    hour === 0 ? null : (timeAmount += `${hour}h`);
+    min === 0 ? null : (timeAmount += ` ${min}m`);
+
+    element.title = `${start.format("HH:mm")}~${end.format(
+      "HH:mm"
+    )} (${timeAmount})`;
   }
 
   res.status(200).json({
@@ -300,7 +304,7 @@ const getIntersectionEventsByDay = async (req, res, next) => {
 
   // 입력받은 timezone 을 이용하여 inputDate 를 변환
   // 특정 지역 날짜 + 특정 지역 timezone = UTC
-  const utcInputDate = moment.tz(inputDate + " 00:00", timezone).utc();
+  const utcInputDate = moment.tz(inputDate, timezone).utc();
   // YYYY-MM-DDT00:00:00+09:00
   // {startTime :{"$gte":ISODate('2022-01-22T00:00:00Z')}}
 
@@ -315,14 +319,9 @@ const getIntersectionEventsByDay = async (req, res, next) => {
     events = await Event.find({
       calendar: inputCalendar,
       startTime: {
-        $gte: new Date(
-          moment.tz(inputDate + " 00:00", timezone).utc()
-        ).toISOString(),
+        $gte: new Date(moment.tz(inputDate, timezone).utc()).toISOString(),
         $lt: new Date(
-          moment
-            .tz(inputDate + " 00:00", timezone)
-            .add({ hours: 23, minutes: 59 })
-            .utc()
+          moment.tz(inputDate, timezone).add({ hours: 23, minutes: 59 }).utc()
         ).toISOString(),
       },
     })
@@ -362,6 +361,23 @@ const getIntersectionEventsByDay = async (req, res, next) => {
     divMinute
   );
   console.log(intersectionJson);
+
+  for (element of events) {
+    let start = moment.tz(element.startTime, timezone);
+    let end = moment.tz(element.endTime, timezone);
+    let diff = end.diff(start) / 1000 / 60;
+
+    let hour = parseInt(diff / 60);
+    let min = diff % 60;
+
+    let timeAmount = "";
+    hour === 0 ? null : (timeAmount += `${hour}h`);
+    min === 0 ? null : (timeAmount += ` ${min}m`);
+
+    element.title = `${start.format("HH:mm")}~${end.format(
+      "HH:mm"
+    )} (${timeAmount})`;
+  }
 
   res
     .status(201)
@@ -420,13 +436,15 @@ const getIntersectionEventsByDay = async (req, res, next) => {
 const getIntersectionEventsByMonth = async (req, res, next) => {
   // input Data: 년월일(), Timezone, 캘린더 정보
   const inputCalendar = req.params.calendarId;
-  let inputMonth = req.params.date;
+  const inputStartDate = req.params.date.split("~")[0];
+  const inputEndDate = req.params.date.split("~")[1];
   const timezone = decodeURIComponent(req.params.timezone);
 
-  inputMonth = inputMonth.substr(0, 7) + "-01";
-
   // 년월, Timezone 정보가 올바른지 확인
-  if (!moment.tz(inputMonth, timezone).isValid()) {
+  if (
+    !moment.tz(inputStartDate, timezone).isValid() ||
+    !moment.tz(inputEndDate, timezone).isValid()
+  ) {
     const error = new HttpError("Please check Date or Timezone.", 402);
     return next(error);
   }
@@ -444,19 +462,14 @@ const getIntersectionEventsByMonth = async (req, res, next) => {
     events = await Event.find({
       calendar: inputCalendar,
       startTime: {
-        $gte: new Date(
-          moment.tz(inputMonth + " 00:00", timezone).utc()
-        ).toISOString(),
+        $gte: new Date(moment.tz(inputStartDate, timezone).utc()).toISOString(),
         $lt: new Date(
-          moment
-            .tz(inputMonth + " 00:00", timezone)
-            .endOf("month")
-            .utc()
+          moment.tz(inputEndDate, timezone).add(1, "day").utc()
         ).toISOString(),
       },
     })
       .sort({ startTime: 1, endTime: 1 })
-      .select({ title: 0, calendar: 0 })
+      .select({ _id: 1, startTime: 1, endTime: 1, creator: 1, calendar: 1 })
       .exec();
 
     calendarMembers = await Calendar.findById(inputCalendar)
@@ -654,10 +667,10 @@ const createEvents = async (req, res, next) => {
     // title 은 삭제 예정
     if (count === 0) {
       insertEventsArray.push({
-        title:
-          addDay === 1
-            ? startTime + "~(next day)" + endTime
-            : startTime + "~" + endTime,
+        // title:
+        //   addDay === 1
+        //     ? startTime + "~(next day)" + endTime
+        //     : startTime + "~" + endTime,
         startTime,
         endTime,
       });
