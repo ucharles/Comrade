@@ -14,7 +14,7 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 const theme = createTheme();
 
 export default function JoinCalendar() {
-  const { loading, authenticated } = useAuthState();
+  const { isLoading, authenticated } = useAuthState();
 
   const handleSubmit = (event) => {
     event.preventDefault();
@@ -28,7 +28,7 @@ export default function JoinCalendar() {
   const resetHandler = (event) => {
     event.preventDefault();
   };
-  if (loading) {
+  if (isLoading) {
     return <Loading />;
   }
   if (authenticated) {

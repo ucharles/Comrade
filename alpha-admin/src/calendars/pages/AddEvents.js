@@ -21,7 +21,7 @@ import { useHttpClient } from "../../shared/hooks/http-hook";
 const dateFormat = "YYYY-MM-DD";
 
 const AddEvents = () => {
-  const { loading, authenticated } = useAuthState();
+  const { isLoading, authenticated } = useAuthState();
 
   const { sendRequest } = useHttpClient();
 
@@ -79,7 +79,7 @@ const AddEvents = () => {
     setEndTime(null);
   };
 
-  if (loading) {
+  if (isLoading) {
     return <Loading />;
   }
   if (authenticated) {

@@ -64,7 +64,7 @@ const items = [
 ];
 
 const ViewDayEvent = (props) => {
-  const { loading, authenticated } = useAuthState();
+  const { isLoading, authenticated } = useAuthState();
 
   const [width, setWidth] = useState(window.innerWidth);
   function handleWindowSizeChange() {
@@ -164,7 +164,7 @@ const ViewDayEvent = (props) => {
       </div>
     );
   };
-  if (loading) {
+  if (isLoading) {
     return <Loading />;
   }
   if (authenticated) {

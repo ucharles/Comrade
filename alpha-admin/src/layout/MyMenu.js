@@ -12,7 +12,13 @@ import ExpandMore from "@mui/icons-material/ExpandMore";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
-import { useLogout, Menu, MenuItemLink } from "react-admin";
+import {
+  useLogout,
+  Menu,
+  MenuItemLink,
+  useAuthState,
+  Loading,
+} from "react-admin";
 //import AuthContext from "../shared/util/auth-context";
 
 function stringToColor(string) {
@@ -67,6 +73,8 @@ let calendars = [
 ];
 
 const MyMenu = (props) => {
+  const { isLoading, authenticated } = useAuthState();
+
   const [open, setOpen] = useState(true);
   const [selectedIndex, setSelectedIndex] = useState();
 
@@ -82,63 +90,69 @@ const MyMenu = (props) => {
 
   //const authCtx = useContext(AuthContext);
 
-  return (
-    <div>
-      <ListItemButton onClick={handleClick}>
-        <ListItemIcon>
-          <CalendarTodayIcon />
-        </ListItemIcon>
-        <ListItemText primary="Calendar" />
-        {open ? <ExpandLess /> : <ExpandMore />}
-      </ListItemButton>
+  if (isLoading) {
+    return <Loading />;
+  }
+  if (authenticated) {
+    return (
+      <div>
+        <ListItemButton onClick={handleClick}>
+          <ListItemIcon>
+            <CalendarTodayIcon />
+          </ListItemIcon>
+          <ListItemText primary="Calendar" />
+          {open ? <ExpandLess /> : <ExpandMore />}
+        </ListItemButton>
 
-      <Menu {...props}>
-        <Collapse in={open} timeout="auto" unmountOnExit>
-          {calendars.map((calendar, index) => (
-            <MenuItemLink
-              key={calendar._id}
-              // 캘린더별 URL설정 필요
-              to="/"
-              selected={selectedIndex === index}
-              primaryText={calendar.name}
-              leftIcon={
-                calendar.iconSrc ? (
-                  <Avatar
-                    sx={{ width: 35, height: 35 }}
-                    src={calendar.iconSrc}
-                  />
-                ) : (
-                  <Avatar {...stringAvatar(calendar.name, 35, 35)} />
-                )
-              }
-            />
-          ))}
-        </Collapse>
-        <MenuItemLink
-          to="/calendar/settings"
-          primaryText="Edit Calendars"
-          leftIcon={<EditIcon />}
-        />
-        <MenuItemLink
-          to="/calendar/new"
-          primaryText="Create Calendars"
-          leftIcon={<AddIcon />}
-        />
-        <Divider variant="middle" />
-        <MenuItemLink
-          to="/settings"
-          primaryText="Account Setting"
-          leftIcon={<SettingsIcon />}
-        />
-        <MenuItemLink
-          to=""
-          primaryText="Logout"
-          leftIcon={<LogoutIcon />}
-          onClick={handleLogout}
-        />
-      </Menu>
-    </div>
-  );
+        <Menu {...props}>
+          <Collapse in={open} timeout="auto" unmountOnExit>
+            {calendars.map((calendar, index) => (
+              <MenuItemLink
+                key={calendar._id}
+                // 캘린더별 URL설정 필요
+                to="/"
+                selected={selectedIndex === index}
+                primaryText={calendar.name}
+                leftIcon={
+                  calendar.iconSrc ? (
+                    <Avatar
+                      sx={{ width: 35, height: 35 }}
+                      src={calendar.iconSrc}
+                    />
+                  ) : (
+                    <Avatar {...stringAvatar(calendar.name, 35, 35)} />
+                  )
+                }
+              />
+            ))}
+          </Collapse>
+          <MenuItemLink
+            to="/calendar/settings"
+            primaryText="Edit Calendars"
+            leftIcon={<EditIcon />}
+          />
+          <MenuItemLink
+            to="/calendar/new"
+            primaryText="Create Calendars"
+            leftIcon={<AddIcon />}
+          />
+          <Divider variant="middle" />
+          <MenuItemLink
+            to="/settings"
+            primaryText="Account Setting"
+            leftIcon={<SettingsIcon />}
+          />
+          <MenuItemLink
+            to=""
+            primaryText="Logout"
+            leftIcon={<LogoutIcon />}
+            onClick={handleLogout}
+          />
+        </Menu>
+      </div>
+    );
+  }
+  return <React.Fragment></React.Fragment>;
 };
 
 export default MyMenu;

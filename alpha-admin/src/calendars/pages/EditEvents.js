@@ -77,14 +77,14 @@ for (num = 0; num < events.length; num++) {
 }
 
 const EditEvents = () => {
-  const { loading, authenticated } = useAuthState();
+  const { isLoading, authenticated } = useAuthState();
 
   const [selectionModel, setSeletionModel] = useState([]);
   const deleteHandler = () => {
     alert("Are you sure you want to delete this event?");
     console.log(selectionModel);
   };
-  if (loading) {
+  if (isLoading) {
     return <Loading />;
   }
   if (authenticated) {

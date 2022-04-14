@@ -40,7 +40,7 @@ const isCreator = (calendar) => {
 };
 
 const EditCalendars = () => {
-  const { loading, authenticated } = useAuthState();
+  const { isLoading, authenticated } = useAuthState();
 
   // 탈퇴 -> 탈퇴 완료시 캘린더 삭제된 결과 표시 필요
   const leaveHanlder = (event) => {
@@ -58,7 +58,7 @@ const EditCalendars = () => {
     console.log(event.target.value);
   };
 
-  if (loading) {
+  if (isLoading) {
     return <Loading />;
   }
   if (authenticated) {

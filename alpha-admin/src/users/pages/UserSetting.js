@@ -183,8 +183,7 @@ export default function UserSetting() {
                   type="button"
                   fullWidth
                   variant="outlined"
-                  sx={{ mt: 1, mb: 1 }}
-                  Reset>
+                  sx={{ mt: 1, mb: 1 }}>
                   Cancel
                 </Button>
               </Box>

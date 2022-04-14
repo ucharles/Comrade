@@ -20,13 +20,13 @@ const Input = styled("input")({
 });
 
 export default function CreateCalendar() {
-  const { loading, authenticated } = useAuthState();
+  const { isLoading, authenticated } = useAuthState();
 
   const [file, setFile] = useState();
   const [previewUrl, setPreviewUrl] = useState();
 
   useEffect(() => {
-    if (!loading && authenticated) {
+    if (!isLoading && authenticated) {
       // 파일의 존재여부를 확인
       if (!file) {
         return;
@@ -38,7 +38,7 @@ export default function CreateCalendar() {
       };
       fileReader.readAsDataURL(file);
     }
-  }, [authenticated, file, loading]);
+  }, [authenticated, file, isLoading]);
 
   const pickedHandler = (event) => {
     let pickedFile;
@@ -64,7 +64,7 @@ export default function CreateCalendar() {
     setPreviewUrl(null);
   };
 
-  if (loading) {
+  if (isLoading) {
     return <Loading />;
   }
   if (authenticated) {

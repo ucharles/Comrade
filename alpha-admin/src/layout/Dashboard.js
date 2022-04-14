@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const Dashboard = () => {
-  const { loading, authenticated } = useAuthState();
+  const { isLoading, authenticated } = useAuthState();
 
   const classes = useStyles();
   const navigate = useNavigate();
@@ -50,7 +50,7 @@ export const Dashboard = () => {
   let path = "/calendar/1/date/";
 
   useEffect(() => {
-    if (!loading && authenticated) {
+    if (!isLoading && authenticated) {
       const calendarApi = fullCalendarRef.current.getApi();
       const changeViewDate = (arg) => {
         // URL에 날짜가 있는 경우
@@ -67,7 +67,7 @@ export const Dashboard = () => {
       };
       changeViewDate();
     }
-  }, [authenticated, inputDate, loading]);
+  }, [authenticated, inputDate, isLoading]);
 
   const navigateToday = () => {
     const calendarApi = fullCalendarRef.current.getApi();
@@ -113,7 +113,7 @@ export const Dashboard = () => {
     // return <AddEvent dateStr={arg.dateStr} />;
   };
 
-  if (loading) {
+  if (isLoading) {
     return <Loading />;
   }
   if (authenticated) {
