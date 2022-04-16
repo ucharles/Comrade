@@ -6,6 +6,7 @@
     "@blueprintjs/timezone": "^3.9.19",
     "@fullcalendar/daygrid": "^5.10.1",
     "@fullcalendar/interaction": "^5.10.1",
+    "@fullcalendar/moment": "^5.10.1",
     "@fullcalendar/react": "^5.10.1",
     "@mui/lab": "^5.0.0-alpha.64",
     "@mui/material": "^5.2.8",

@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { Title } from "react-admin";
 import { Avatar, Box, Paper, Typography } from "@mui/material";
@@ -7,10 +7,12 @@ import { makeStyles } from "@mui/styles";
 import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
+import moment from "moment";
 
 import FullCalendar from "@fullcalendar/react"; // must go before plugins
 import dayGridPlugin from "@fullcalendar/daygrid"; // a plugin!
 import interactionPlugin from "@fullcalendar/interaction"; // needed for dayClick
+import momentPlugin from "@fullcalendar/moment";
 import Grid from "@mui/material/Grid";
 import "./Dashboard.css";
 
@@ -40,6 +42,48 @@ const useStyles = makeStyles((theme) => ({
 export const Dashboard = () => {
   const classes = useStyles();
   const navigate = useNavigate();
+  const inputDate = useParams().date;
+  const fullCalendarRef = useRef();
+
+  let path = "/calendar/1/date/";
+
+  useEffect(() => {
+    const calendarApi = fullCalendarRef.current.getApi();
+    const changeViewDate = (arg) => {
+      console.log("useEffect: changeViewDate");
+      console.log("inputDate: " + inputDate);
+      // URL에 날짜가 있는 경우
+      if (inputDate) {
+        // URL의 날짜로 이동
+        let start = moment(inputDate).format("YYYY-MM");
+        calendarApi.gotoDate(start);
+      }
+      // URL에 날짜가 없는 경우
+      else {
+        // 오늘 날짜로 이동
+        calendarApi.today();
+      }
+    };
+    changeViewDate();
+  }, [inputDate]);
+
+  const navigateToday = () => {
+    const calendarApi = fullCalendarRef.current.getApi();
+    calendarApi.today();
+    navigate("/calendar/1");
+  };
+
+  const navigatePrevMonth = () => {
+    const calendarApi = fullCalendarRef.current.getApi();
+    let currentDate = calendarApi.getDate();
+    navigate(path + moment(currentDate).add(-1, "months").format("YYYY-MM"));
+  };
+
+  const navigateNextMonth = () => {
+    const calendarApi = fullCalendarRef.current.getApi();
+    let currentDate = calendarApi.getDate();
+    navigate(path + moment(currentDate).add(1, "months").format("YYYY-MM"));
+  };
 
   const EVENTS = [
     {
@@ -62,7 +106,7 @@ export const Dashboard = () => {
   const editMemberModalClose = () => setEditMemberOpen(false);
 
   const dateClickHandler = (arg) => {
-    let path = `/calendar/event/${arg.dateStr}`;
+    let path = `/calendar/1/event/${arg.dateStr}`;
     navigate(path);
     // return <AddEvent dateStr={arg.dateStr} />;
   };
@@ -101,10 +145,30 @@ export const Dashboard = () => {
             </Box>
             <Box sx={{ height: "80vh" }}>
               <FullCalendar
+                ref={fullCalendarRef}
+                initialView="dayGridMonth"
+                titleFormat="YYYY/MM"
+                headerToolbar={{
+                  left: "title",
+                  right: "customToday customPrev,customNext",
+                }}
+                customButtons={{
+                  customToday: {
+                    text: " Today ",
+                    click: navigateToday,
+                  },
+                  customPrev: {
+                    text: " < Prev ",
+                    click: navigatePrevMonth,
+                  },
+                  customNext: {
+                    text: " Next > ",
+                    click: navigateNextMonth,
+                  },
+                }}
                 timeZone="local"
                 dateClick={dateClickHandler}
-                plugins={[dayGridPlugin, interactionPlugin]}
-                initialView="dayGridMonth"
+                plugins={[dayGridPlugin, interactionPlugin, momentPlugin]}
                 events={EVENTS}
                 height="100%"
               />

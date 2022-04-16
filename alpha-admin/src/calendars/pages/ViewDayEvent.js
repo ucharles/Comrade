@@ -78,6 +78,7 @@ const ViewDayEvent = (props) => {
   // const [sidebarWidth, setSideBarWidth] = useState(0);
   const inputDate = useParams().date;
   let path = `/calendar/event/`;
+  const inputDateMonth = moment(inputDate).format("YYYY-MM");
 
   function reducer(state, action) {
     switch (action.type) {
@@ -169,7 +170,9 @@ const ViewDayEvent = (props) => {
       <Card>
         <Box sx={{ style: "flex" }}>
           <Counter />
-          <Button href="#" variant="contained">
+          <Button
+            href={`#/calendar/1/date/${inputDateMonth}`}
+            variant="contained">
             Calendar
           </Button>
         </Box>
