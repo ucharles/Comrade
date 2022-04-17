@@ -147,6 +147,20 @@ export const Dashboard = () => {
                   </IconButton>
                 </Box>
               </Box>
+              <Box className={classes.buttonBox}>
+                <IconButton
+                  className={classes.button}
+                  href="#/calendar/edit"
+                  variant="contained">
+                  <EditIcon />
+                </IconButton>
+                <IconButton
+                  className={classes.button}
+                  href="#/calendar/event"
+                  variant="contained">
+                  <AddIcon />
+                </IconButton>
+              </Box>
               <Box sx={{ height: "80vh" }}>
                 <FullCalendar
                   ref={fullCalendarRef}
@@ -199,34 +213,27 @@ export const Dashboard = () => {
                   {/* 멤버 관리 모달 (캘린더 관리자에게만 보일 것)*/}
                   <IconButton onClick={editMemberModalOpen}>
                     <EditIcon />
-                    <EditMemberModal
-                      open={editMemberOpen}
-                      close={editMemberModalClose}
-                    />
                   </IconButton>
+                  <EditMemberModal
+                    open={editMemberOpen}
+                    close={editMemberModalClose}
+                  />
                   {/* 멤버 추가 모달 */}
                   <IconButton onClick={addMemberModalOpen}>
                     <AddIcon />
-                    <AddMemberModal
-                      open={addMemberOpen}
-                      close={addMemberModalClose}
-                    />
                   </IconButton>
+                  <AddMemberModal
+                    open={addMemberOpen}
+                    close={addMemberModalClose}
+                  />
                 </Box>
-              </Box>
-              <Box sx={{ mb: 2, display: "flex" }}>
-                <Avatar sx={{ mt: 0.5, mr: 2 }}></Avatar>
-                <Box>
-                  <div>Username</div>
-                  <div>Role</div>
+                <Box sx={{ display: "flex" }}>
+                  <Avatar sx={{ mt: 0.5, mr: 2 }}></Avatar>
+                  <div>
+                    <div>Username</div>
+                    <div>Role</div>
+                  </div>
                 </Box>
-              </Box>
-              <Box sx={{ display: "flex" }}>
-                <Avatar sx={{ mt: 0.5, mr: 2 }}></Avatar>
-                <div>
-                  <div>Username</div>
-                  <div>Role</div>
-                </div>
               </Box>
             </Paper>
           </Grid>
