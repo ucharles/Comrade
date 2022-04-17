@@ -147,20 +147,6 @@ export const Dashboard = () => {
                   </IconButton>
                 </Box>
               </Box>
-              <Box className={classes.buttonBox}>
-                <IconButton
-                  className={classes.button}
-                  href="#/calendar/edit"
-                  variant="contained">
-                  <EditIcon />
-                </IconButton>
-                <IconButton
-                  className={classes.button}
-                  href="#/calendar/event"
-                  variant="contained">
-                  <AddIcon />
-                </IconButton>
-              </Box>
               <Box sx={{ height: "80vh" }}>
                 <FullCalendar
                   ref={fullCalendarRef}
@@ -196,14 +182,12 @@ export const Dashboard = () => {
           <Grid item xs={12} sm={12} md={12} lg={2}>
             <Paper className={classes.card}>
               <Box sx={{ display: "flex", mb: 1 }}>
-                <Box>
-                  <Typography
-                    variant="h6"
-                    component="h2"
-                    sx={{ ml: 0.5, mt: 0.4 }}>
-                    Members (n)
-                  </Typography>
-                </Box>
+                <Typography
+                  variant="h6"
+                  component="h2"
+                  sx={{ ml: 0.5, mt: 0.4 }}>
+                  Members (n)
+                </Typography>
                 <Box
                   sx={{
                     marginLeft: "auto",
@@ -227,13 +211,13 @@ export const Dashboard = () => {
                     close={addMemberModalClose}
                   />
                 </Box>
-                <Box sx={{ display: "flex" }}>
-                  <Avatar sx={{ mt: 0.5, mr: 2 }}></Avatar>
-                  <div>
-                    <div>Username</div>
-                    <div>Role</div>
-                  </div>
-                </Box>
+              </Box>
+              <Box sx={{ display: "flex" }}>
+                <Avatar sx={{ mt: 0.5, mr: 2 }}></Avatar>
+                <div>
+                  <div>Username</div>
+                  <div>Role</div>
+                </div>
               </Box>
             </Paper>
           </Grid>
