@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
+import { Title, useAuthState, Loading } from "react-admin";
+
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import { Card } from "@mui/material";
-import { Title } from "react-admin";
 import { styled } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
@@ -19,21 +20,25 @@ const Input = styled("input")({
 });
 
 export default function CreateCalendar() {
+  const { isLoading, authenticated } = useAuthState();
+
   const [file, setFile] = useState();
   const [previewUrl, setPreviewUrl] = useState();
 
   useEffect(() => {
-    // 파일의 존재여부를 확인
-    if (!file) {
-      return;
+    if (!isLoading && authenticated) {
+      // 파일의 존재여부를 확인
+      if (!file) {
+        return;
+      }
+      // 브라우저 내장 API
+      const fileReader = new FileReader();
+      fileReader.onload = () => {
+        setPreviewUrl(fileReader.result);
+      };
+      fileReader.readAsDataURL(file);
     }
-    // 브라우저 내장 API
-    const fileReader = new FileReader();
-    fileReader.onload = () => {
-      setPreviewUrl(fileReader.result);
-    };
-    fileReader.readAsDataURL(file);
-  }, [file]);
+  }, [authenticated, file, isLoading]);
 
   const pickedHandler = (event) => {
     let pickedFile;
@@ -59,79 +64,81 @@ export default function CreateCalendar() {
     setPreviewUrl(null);
   };
 
-  return (
-    <ThemeProvider theme={theme}>
-      <Title title={process.env.REACT_APP_TITLE} />
-      <Card sx={{ height: "100%" }}>
-        <Container component="main" maxWidth="xs">
-          <CssBaseline />
-          <Box
-            sx={{
-              marginTop: 3,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <Typography component="h1" variant="h5">
-              Create New Calendar
-            </Typography>
+  if (isLoading) {
+    return <Loading />;
+  }
+  if (authenticated) {
+    return (
+      <ThemeProvider theme={theme}>
+        <Title title={process.env.REACT_APP_TITLE} />
+        <Card sx={{ height: "100%" }}>
+          <Container component="main" maxWidth="xs">
+            <CssBaseline />
             <Box
-              component="form"
-              noValidate
-              onSubmit={handleSubmit}
-              sx={{ mt: 3 }}
-            >
-              <Grid container spacing={2}>
-                <Grid item xs={12}>
-                  <TextField
-                    name="calendarName"
-                    required
-                    fullWidth
-                    id="calendarName"
-                    label="Calendar Name"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    required
-                    fullWidth
-                    id="description"
-                    label="Description"
-                    name="description"
-                  />
-                </Grid>
-                <Grid item xs={12}>
-                  <TextField
-                    fullWidth
-                    id="numberOfMember"
-                    type="number"
-                    label="Number of member"
-                    name="numberOfMember"
-                  />
-                </Grid>
-
-                <Grid item xs={12}>
-                  Image Preview
-                </Grid>
-                <Grid item xs={6}>
-                  <Avatar src={previewUrl} sx={{ width: 120, height: 120 }} />
-                </Grid>
-                <Grid item xs={6}>
-                  <label htmlFor="contained-button-file">
-                    <Input
-                      accept="image/*"
-                      id="contained-button-file"
-                      multiple
-                      type="file"
-                      onChange={pickedHandler}
+              sx={{
+                marginTop: 3,
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+              }}>
+              <Typography component="h1" variant="h5">
+                Create New Calendar
+              </Typography>
+              <Box
+                component="form"
+                noValidate
+                onSubmit={handleSubmit}
+                sx={{ mt: 3 }}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <TextField
+                      name="calendarName"
+                      required
+                      fullWidth
+                      id="calendarName"
+                      label="Calendar Name"
                     />
-                    <Button variant="contained" component="span" fullWidth>
-                      Upload
-                    </Button>
-                  </label>
-                </Grid>
-                {/* <Grid item xs={12}>
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      required
+                      fullWidth
+                      id="description"
+                      label="Description"
+                      name="description"
+                    />
+                  </Grid>
+                  <Grid item xs={12}>
+                    <TextField
+                      fullWidth
+                      id="numberOfMember"
+                      type="number"
+                      label="Number of member"
+                      name="numberOfMember"
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    Image Preview
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Avatar src={previewUrl} sx={{ width: 120, height: 120 }} />
+                  </Grid>
+                  <Grid item xs={6}>
+                    <label htmlFor="contained-button-file">
+                      <Input
+                        accept="image/*"
+                        id="contained-button-file"
+                        multiple
+                        type="file"
+                        onChange={pickedHandler}
+                      />
+                      <Button variant="contained" component="span" fullWidth>
+                        Upload
+                      </Button>
+                    </label>
+                  </Grid>
+                  {/* <Grid item xs={12}>
                 <FormControlLabel
                   control={
                     <Checkbox value="allowExtraEmails" color="primary" />
@@ -139,28 +146,28 @@ export default function CreateCalendar() {
                   label="I want to receive inspiration, marketing promotions and updates via email."
                 />
               </Grid> */}
-              </Grid>
-              <Button
-                type="submit"
-                fullWidth
-                variant="contained"
-                sx={{ mt: 3, mb: 1 }}
-              >
-                Create
-              </Button>
-              <Button
-                type="reset"
-                fullWidth
-                variant="outlined"
-                sx={{ mt: 1, mb: 1 }}
-                onClick={resetHandler}
-              >
-                Reset
-              </Button>
+                </Grid>
+                <Button
+                  type="submit"
+                  fullWidth
+                  variant="contained"
+                  sx={{ mt: 3, mb: 1 }}>
+                  Create
+                </Button>
+                <Button
+                  type="reset"
+                  fullWidth
+                  variant="outlined"
+                  sx={{ mt: 1, mb: 1 }}
+                  onClick={resetHandler}>
+                  Reset
+                </Button>
+              </Box>
             </Box>
-          </Box>
-        </Container>
-      </Card>
-    </ThemeProvider>
-  );
+          </Container>
+        </Card>
+      </ThemeProvider>
+    );
+  }
+  return null;
 }

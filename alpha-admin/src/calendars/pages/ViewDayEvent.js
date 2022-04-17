@@ -1,11 +1,13 @@
-import moment from "moment";
 import React, { useState, useEffect, useReducer } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { useAuthState, Loading } from "react-admin";
+import moment from "moment";
 import Timeline, {
   TimelineHeaders,
   SidebarHeader,
   DateHeader,
 } from "react-calendar-timeline";
+
 import EventModal from "../../layout/EventModals";
 import "react-calendar-timeline/lib/Timeline.css";
 import "./ViewDayEvent.css";
@@ -62,16 +64,20 @@ const items = [
 ];
 
 const ViewDayEvent = (props) => {
+  const { isLoading, authenticated } = useAuthState();
+
   const [width, setWidth] = useState(window.innerWidth);
   function handleWindowSizeChange() {
     setWidth(window.innerWidth);
   }
   useEffect(() => {
-    window.addEventListener("resize", handleWindowSizeChange);
-    return () => {
-      window.removeEventListener("resize", handleWindowSizeChange);
-    };
-  }, []);
+    if (authenticated) {
+      window.addEventListener("resize", handleWindowSizeChange);
+      return () => {
+        window.removeEventListener("resize", handleWindowSizeChange);
+      };
+    }
+  }, [authenticated]);
   const isMobile = width <= 768;
   const navigate = useNavigate();
 
@@ -158,78 +164,83 @@ const ViewDayEvent = (props) => {
       </div>
     );
   };
-
-  return (
-    <React.Fragment>
-      {/* <div className="float-button">
+  if (isLoading) {
+    return <Loading />;
+  }
+  if (authenticated) {
+    return (
+      <React.Fragment>
+        {/* <div className="float-button">
         <button type="button" onClick={sideBarHandler}>
           {sidebarWidth === 0 ? "Open" : "Close"}
         </button>
       </div> */}
-      {/* <div>{inputDate}</div> */}
-      <Card>
-        <Box sx={{ style: "flex" }}>
-          <Counter />
-          <Button
-            href={`#/calendar/1/date/${inputDateMonth}`}
-            variant="contained">
-            Calendar
-          </Button>
-        </Box>
-        <Timeline
-          stackItems
-          groups={groups}
-          items={items}
-          defaultTimeStart={defaultTimeStart}
-          defaultTimeEnd={defaultTimeEnd}
-          minZoom={defaultTimeRange}
-          maxZoom={defaultTimeRange}
-          canMove={false}
-          canResize={false}
-          sidebarWidth={isMobile ? window.innerWidth / 5 : 150}
-          onItemSelect={(itemId, e, time) => {
-            const obj = items.find((v) => {
-              return v.id === itemId;
-            });
-            if (obj.group === 1) {
-              eventModalOpen(obj);
-            }
-          }}
-          onItemClick={(itemId, e, time) => {
-            let obj = items.find((v) => {
-              return v.id === itemId;
-            });
-            if (obj.group === 1) {
-              eventModalOpen(obj);
-            }
-          }}
-          onTimeChange={(_start, _end, updateScrollCanvas) => {
-            if (
-              _start > defaultVisableTimeStart &&
-              _end < defaultVisableTimeEnd
-            )
-              updateScrollCanvas(_start, _end);
-          }}>
-          <TimelineHeaders className="sticky">
-            <SidebarHeader>
-              {({ getRootProps }) => {
-                return <div {...getRootProps()}></div>;
-              }}
-            </SidebarHeader>
-            {/* 내용을 가운데에 고정하고 싶음 */}
-            <DateHeader
-              unit="primaryHeader"
-              headerData={{ isMonth: true }}
-              labelFormat="YYYY/MM/DD ddd"
-              intervalRenderer={intervalRenderer}
-            />
-            <DateHeader unit="hour" labelFormat="HH" />
-          </TimelineHeaders>
-        </Timeline>
-      </Card>
-      <EventModal open={eventOpen} close={eventModalClose} obj={eventObj} />
-    </React.Fragment>
-  );
+        {/* <div>{inputDate}</div> */}
+        <Card>
+          <Box sx={{ style: "flex" }}>
+            <Counter />
+            <Button
+              href={`#/calendar/1/date/${inputDateMonth}`}
+              variant="contained">
+              Calendar
+            </Button>
+          </Box>
+          <Timeline
+            stackItems
+            groups={groups}
+            items={items}
+            defaultTimeStart={defaultTimeStart}
+            defaultTimeEnd={defaultTimeEnd}
+            minZoom={defaultTimeRange}
+            maxZoom={defaultTimeRange}
+            canMove={false}
+            canResize={false}
+            sidebarWidth={isMobile ? window.innerWidth / 5 : 150}
+            onItemSelect={(itemId, e, time) => {
+              const obj = items.find((v) => {
+                return v.id === itemId;
+              });
+              if (obj.group === 1) {
+                eventModalOpen(obj);
+              }
+            }}
+            onItemClick={(itemId, e, time) => {
+              let obj = items.find((v) => {
+                return v.id === itemId;
+              });
+              if (obj.group === 1) {
+                eventModalOpen(obj);
+              }
+            }}
+            onTimeChange={(_start, _end, updateScrollCanvas) => {
+              if (
+                _start > defaultVisableTimeStart &&
+                _end < defaultVisableTimeEnd
+              )
+                updateScrollCanvas(_start, _end);
+            }}>
+            <TimelineHeaders className="sticky">
+              <SidebarHeader>
+                {({ getRootProps }) => {
+                  return <div {...getRootProps()}></div>;
+                }}
+              </SidebarHeader>
+              {/* 내용을 가운데에 고정하고 싶음 */}
+              <DateHeader
+                unit="primaryHeader"
+                headerData={{ isMonth: true }}
+                labelFormat="YYYY/MM/DD ddd"
+                intervalRenderer={intervalRenderer}
+              />
+              <DateHeader unit="hour" labelFormat="HH" />
+            </TimelineHeaders>
+          </Timeline>
+        </Card>
+        <EventModal open={eventOpen} close={eventModalClose} obj={eventObj} />
+      </React.Fragment>
+    );
+  }
+  return null;
 };
 
 export default ViewDayEvent;
