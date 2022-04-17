@@ -1,4 +1,5 @@
 import { Cookies } from "react-cookie";
+import moment from "moment-timezone";
 
 const cookies = new Cookies();
 
@@ -20,6 +21,10 @@ const authProvider = {
     return fetch(request)
       .then((response) => {
         if (response.ok) {
+          cookies.set("tz", encodeURIComponent(moment.tz.guess()), {
+            path: "/",
+            expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
+          });
           return Promise.resolve();
         } else if (response.status < 200 || response.status >= 300) {
           return Promise.reject();
@@ -33,6 +38,17 @@ const authProvider = {
   checkAuth: async () => {
     if (!cookies.get("loggedIn")) {
       return Promise.reject();
+    }
+    // timezone 쿠키가 존재하지 않거나, timezone이 올바르지 않을 경우
+    // timezone 쿠키를 새로운 값으로 갱신, 유효기간 14일
+    if (
+      !cookies.get("tz") ||
+      !moment.tz(decodeURIComponent(cookies.get("tz"))).isValid()
+    ) {
+      cookies.set("tz", encodeURIComponent(moment.tz.guess()), {
+        path: "/",
+        expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
+      });
     }
 
     const request = new Request(

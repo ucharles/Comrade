@@ -231,7 +231,7 @@ const getEventsByMonth = async (req, res, next) => {
   const inputCalendar = req.params.calendarId;
   const inputStartDate = req.params.date.split("~")[0];
   const inputEndDate = req.params.date.split("~")[1];
-  const timezone = decodeURIComponent(req.params.timezone);
+  const timezone = decodeURIComponent(req.cookies.tz);
 
   // 입력된 날짜와 타임존이 유효한지 확인
   if (
@@ -291,7 +291,7 @@ const getEventsByMonth = async (req, res, next) => {
 const getIntersectionEventsByDay = async (req, res, next) => {
   const inputCalendar = req.params.calendarId;
   const inputDate = req.params.date;
-  const timezone = decodeURIComponent(req.params.timezone);
+  const timezone = decodeURIComponent(req.cookies.tz);
 
   // 입력된 날짜와 타임존이 유효한지 확인
   if (!moment.tz(inputDate, timezone).isValid()) {
@@ -380,7 +380,7 @@ const getIntersectionEventsByDay = async (req, res, next) => {
   }
 
   res
-    .status(201)
+    .status(200)
     .json({ events: events, intersection: intersectionJson.slice(0, 6) });
 
   // events 변수 자체가 커서인듯...
@@ -438,7 +438,7 @@ const getIntersectionEventsByMonth = async (req, res, next) => {
   const inputCalendar = req.params.calendarId;
   const inputStartDate = req.params.date.split("~")[0];
   const inputEndDate = req.params.date.split("~")[1];
-  const timezone = decodeURIComponent(req.params.timezone);
+  const timezone = decodeURIComponent(req.cookies.tz);
 
   // 년월, Timezone 정보가 올바른지 확인
   if (
@@ -561,7 +561,7 @@ const getIntersectionEventsByMonth = async (req, res, next) => {
   console.log(intersectionByMonthJson);
 
   // 이벤트 전역변수 출력
-  res.status(201).json({ events: intersectionByMonthJson });
+  res.status(200).json({ events: intersectionByMonthJson });
 };
 
 const createEvents = async (req, res, next) => {
@@ -688,7 +688,7 @@ const createEvents = async (req, res, next) => {
     return next(error);
   }
 
-  res.status(201).json({ events: insertEventsArray, conflict: conflictTime });
+  res.status(200).json({ events: insertEventsArray, conflict: conflictTime });
 
   // data validation
 
