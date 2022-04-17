@@ -129,14 +129,16 @@ export const Dashboard = () => {
               <Box className={classes.buttonBox}>
                 <IconButton
                   className={classes.button}
-                  href="#/calendar/1/edit"
-                  variant="contained">
+                  href="#/calendar/edit"
+                  variant="contained"
+                >
                   <EditIcon />
                 </IconButton>
                 <IconButton
                   className={classes.button}
-                  href="#/calendar/1/event"
-                  variant="contained">
+                  href="#/calendar/event"
+                  variant="contained"
+                >
                   <AddIcon />
                 </IconButton>
               </Box>
@@ -180,7 +182,8 @@ export const Dashboard = () => {
                 <Typography
                   variant="h6"
                   component="h2"
-                  sx={{ ml: 0.5, mt: 0.4 }}>
+                  sx={{ ml: 0.5, mt: 0.4 }}
+                >
                   Members (n)
                 </Typography>
               </Box>
@@ -189,23 +192,24 @@ export const Dashboard = () => {
                   marginLeft: "auto",
                   display: "flex",
                   flexDirection: "column",
-                }}>
+                }}
+              >
                 {/* 멤버 관리 모달 (캘린더 관리자에게만 보일 것)*/}
                 <IconButton onClick={editMemberModalOpen}>
                   <EditIcon />
-                  <EditMemberModal
-                    open={editMemberOpen}
-                    close={editMemberModalClose}
-                  />
                 </IconButton>
+                <EditMemberModal
+                  open={editMemberOpen}
+                  close={editMemberModalClose}
+                />
                 {/* 멤버 추가 모달 */}
                 <IconButton onClick={addMemberModalOpen}>
                   <AddIcon />
-                  <AddMemberModal
-                    open={addMemberOpen}
-                    close={addMemberModalClose}
-                  />
                 </IconButton>
+                <AddMemberModal
+                  open={addMemberOpen}
+                  close={addMemberModalClose}
+                />
               </Box>
             </Box>
             <Box sx={{ mb: 2, display: "flex" }}>
