@@ -65,6 +65,7 @@ const EditCalendars = () => {
   if (authenticated) {
     return (
       <React.Fragment>
+        <Title title={process.env.REACT_APP_TITLE} />
         <Card sx={{ height: "100%" }}>
           <Container component="main" maxWidth="md" sx={{ marginTop: 3 }}>
             <Typography variant="h5" margin={1}>
