@@ -125,7 +125,7 @@ const MyMenu = (props) => {
           <MenuItemLink
             sx={{ height: 50 }}
             to="/calendar/new"
-            primaryText="Create Calendars"
+            primaryText="Create Calendar"
             leftIcon={<AddIcon />}
           />
           <Divider variant="middle" />
