@@ -2,6 +2,7 @@ import React, { useState, useContext } from "react";
 import Divider from "@mui/material/Divider";
 import Collapse from "@mui/material/Collapse";
 import Avatar from "@mui/material/Avatar";
+import Box from "@mui/material/Box";
 import ListItemButton from "@mui/material/ListItemButton";
 import SettingsIcon from "@mui/icons-material/Settings";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
@@ -56,19 +57,17 @@ function stringAvatar(name, width, height) {
 let calendars = [
   {
     _id: "61d6cf33bffd707ad9702853",
-    name: "dummy calendar1",
+    name: "Dummy calendar1",
     description: "description1",
     iconSrc: "https://www.1999.co.jp/itbig81/10812608.jpg",
     creator: "Captain1",
-    timestamps: "2022-01-05 13:00",
   },
   {
     _id: "61d6cf33bffd707ad9702854",
-    name: "dummy calendar2",
+    name: "Dummy calendar2",
     description: "description222222",
     iconSrc: "",
     creator: "Captain2",
-    timestamps: "2022-01-06 13:00",
   },
 ];
 
@@ -82,9 +81,6 @@ const MyMenu = (props) => {
     setSelectedIndex(index);
   };
 
-  const handleClick = () => {
-    setOpen(!open);
-  };
   const logout = useLogout();
   const handleLogout = () => logout();
 
@@ -96,54 +92,52 @@ const MyMenu = (props) => {
   if (authenticated) {
     return (
       <div>
-        <ListItemButton onClick={handleClick}>
-          <ListItemIcon>
-            <CalendarTodayIcon />
-          </ListItemIcon>
-          <ListItemText primary="Calendar" />
-          {open ? <ExpandLess /> : <ExpandMore />}
-        </ListItemButton>
-
         <Menu {...props}>
-          <Collapse in={open} timeout="auto" unmountOnExit>
-            {calendars.map((calendar, index) => (
-              <MenuItemLink
-                key={calendar._id}
-                // 캘린더별 URL설정 필요
-                to="/"
-                selected={selectedIndex === index}
-                primaryText={calendar.name}
-                leftIcon={
-                  calendar.iconSrc ? (
+          {calendars.map((calendar, index) => (
+            <MenuItemLink
+              sx={{ height: 50, paddingLeft: 1.3 }}
+              key={calendar._id}
+              to={`/calendar/${calendar._id}`}
+              selected={selectedIndex === index}
+              primaryText={calendar.name}
+              leftIcon={
+                calendar.iconSrc ? (
+                  <Box sx={{ paddingRight: 1.5 }}>
                     <Avatar
                       sx={{ width: 35, height: 35 }}
                       src={calendar.iconSrc}
                     />
-                  ) : (
+                  </Box>
+                ) : (
+                  <Box sx={{ paddingRight: 1.5 }}>
                     <Avatar {...stringAvatar(calendar.name, 35, 35)} />
-                  )
-                }
-              />
-            ))}
-          </Collapse>
+                  </Box>
+                )
+              }
+            />
+          ))}
           <MenuItemLink
+            sx={{ height: 50 }}
             to="/calendar/settings"
             primaryText="Edit Calendars"
             leftIcon={<EditIcon />}
           />
           <MenuItemLink
+            sx={{ height: 50 }}
             to="/calendar/new"
             primaryText="Create Calendars"
             leftIcon={<AddIcon />}
           />
           <Divider variant="middle" />
           <MenuItemLink
+            sx={{ height: 50 }}
             to="/settings"
             primaryText="Account Setting"
             leftIcon={<SettingsIcon />}
           />
           <MenuItemLink
-            to=""
+            sx={{ height: 50 }}
+            to="/logout"
             primaryText="Logout"
             leftIcon={<LogoutIcon />}
             onClick={handleLogout}
