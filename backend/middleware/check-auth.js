@@ -114,6 +114,10 @@ module.exports = async (req, res, next) => {
         .cookie("loggedIn", 1, {
           path: "/",
           expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
+        })
+        .cookie("tz", req.cookies.tz, {
+          path: "/",
+          expires: new Date(Date.now() + 1000 * 60 * 60 * 24 * 14),
         });
     }
 

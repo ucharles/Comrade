@@ -10,15 +10,15 @@ router.use(checkAuth);
 // 테스트용
 router.get("/", eventsControllers.getEvents);
 router.get(
-  "/calendar/:calendarId/int-day/:date/:timezone",
+  "/calendar/:calendarId/int-day/:date",
   eventsControllers.getIntersectionEventsByDay
 );
 router.get(
-  "/calendar/:calendarId/int-month/:date/:timezone",
+  "/calendar/:calendarId/int-month/:date",
   eventsControllers.getIntersectionEventsByMonth
 );
 router.get(
-  "/calendar/:calendarId/one-user-month/:date/:timezone",
+  "/calendar/:calendarId/one-user-month/:date",
   eventsControllers.getEventsByMonth
 );
 

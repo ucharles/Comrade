@@ -166,17 +166,20 @@ describe("GET /api/events/calendar/:calendarId/one-user-month/:date/:timezone", 
       .send({ email: "hhh1@hhh.com", password: "123123" });
 
     const cookie = loginResponse.headers["set-cookie"];
+    cookie.push(
+      `tz=${encodeURIComponent("Asia/Seoul")}; Path=/; Expires=${new Date(
+        Date.now() + 1000 * 60 * 60 * 24 * 14
+      )}`
+    );
+    console.log(cookie);
 
-    const url =
-      `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/one-user-month/2022-01-22~2022-02-01/` +
-      encodeURIComponent("Asia/Seoul");
-
+    const url = `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/one-user-month/2022-01-22~2022-02-01/`;
     await request(app)
       .get(url)
       .set({ cookie: cookie })
       .then(async (res) => {
+        expect(res.statusCode).toBe(200);
         expect(res.body.events).toStrictEqual("");
-        expect(res.statusCode).toBe(201);
       });
   });
 });
@@ -188,16 +191,19 @@ describe("GET /api/events/calendar/:calendarId/int-day/:date/:timezone", () => {
       .send({ email: "hhh1@hhh.com", password: "123123" });
 
     const cookie = loginResponse.headers["set-cookie"];
+    cookie.push(
+      `tz=${encodeURIComponent("Asia/Seoul")}; Path=/; Expires=${new Date(
+        Date.now() + 1000 * 60 * 60 * 24 * 14
+      )}`
+    );
 
-    const url =
-      `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/int-day/2022-01-22/` +
-      encodeURIComponent("Asia/Seoul");
+    const url = `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/int-day/2022-01-22/`;
 
     await request(app)
       .get(url)
       .set({ cookie: cookie })
       .then(async (res) => {
-        expect(res.statusCode).toBe(201);
+        expect(res.statusCode).toBe(200);
         expect(res.body.events).toStrictEqual("");
         expect(res.body.intersection).toStrictEqual([
           {
@@ -323,16 +329,19 @@ describe("GET /api/events/calendar/:calendarId/int-month/:date/:timezone", () =>
       .send({ email: "hhh1@hhh.com", password: "123123" });
 
     const cookie = loginResponse.headers["set-cookie"];
+    cookie.push(
+      `tz=${encodeURIComponent("Asia/Seoul")}; Path=/; Expires=${new Date(
+        Date.now() + 1000 * 60 * 60 * 24 * 14
+      )}`
+    );
 
-    const url =
-      `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/int-month/2022-01-01/` +
-      encodeURIComponent("Asia/Seoul");
+    const url = `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/int-month/2022-01-01/`;
 
     await request(app)
       .get(url)
       .set({ cookie: cookie })
       .then(async (res) => {
-        expect(res.statusCode).toBe(201);
+        expect(res.statusCode).toBe(200);
         expect(res.body.events).toStrictEqual([
           {
             depth: 3,
