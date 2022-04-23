@@ -194,18 +194,23 @@ cookie: at(userId), rt(uuid)
 
 ## invite-controllers
 
-(미구현)
-
 **⬇︎ Authentication required ⬇︎**  
 cookie: at(userId), rt(uuid)
 
 ### GET
 
-- **/api/invite/calendar/:calendarId**
+- **/api/invite/:inviteId**
   - cookie: at(userId)
-  - 초대 링크 작성용, 획득용
+  - 초대 링크로 calendarId 획득 가능
+  - 캘린더의 {\_id, name, description, image, members} 를 리턴.
+    - members는 달력에 속한 멤버 수
+
+### POST
+
+- **/api/invite/**
+  - cookie: at(userId)
+  - body: {calendarId}
+  - 초대링크 생성, 획득, 갱신용
   - calendar 에 가입한 유저라면 누구든지 작성 가능
-  - 만료 기한 있음(하루?) 만료 기한 있음/없음을 선택 가능하게 할 건지 고민중
-- **/api/invite/uuid/:uuid**
-  - cookie: at(userId)
-  - 초대 링크로 calendar 가입용, calendarId 획득 가능
+  - 해당 캘린더에 속한 유저가 아니라면 접근 거부
+  - 만료 기한 3일

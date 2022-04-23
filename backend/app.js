@@ -11,6 +11,7 @@ const csrf = require("csurf");
 const eventRoutes = require("./routes/events-routes");
 const usersRoutes = require("./routes/users-routes");
 const calendarRoutes = require("./routes/calendars-routes");
+const inviteRoutes = require("./routes/invites-routes");
 
 function createServer() {
   const app = express();
@@ -40,6 +41,7 @@ function createServer() {
   app.use("/api/users", usersRoutes);
   app.use("/api/events", eventRoutes);
   app.use("/api/calendar", calendarRoutes);
+  app.use("/api/invite", inviteRoutes);
 
   // app.get("/", csrfProtection, (req, res) => {
   //   res.cookie("XSRF-TOKEN", req.csrfToken(), {
