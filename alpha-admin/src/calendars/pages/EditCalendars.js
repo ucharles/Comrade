@@ -12,6 +12,7 @@ import {
   ListItemText,
   Avatar,
   Grid,
+  Box,
 } from "@mui/material";
 import FolderIcon from "@mui/icons-material/Folder";
 
@@ -19,7 +20,7 @@ import FolderIcon from "@mui/icons-material/Folder";
 let calendars = [
   {
     _id: "61d6cf33bffd707ad9702853",
-    name: "dummy calendar1",
+    name: "Hello World!",
     description: "description1",
     creator: "Captain1",
     member: "Captain1",
@@ -64,10 +65,11 @@ const EditCalendars = () => {
   if (authenticated) {
     return (
       <React.Fragment>
+        <Title title={process.env.REACT_APP_TITLE} />
         <Card sx={{ height: "100%" }}>
-          <Container component="main" maxWidth="md">
+          <Container component="main" maxWidth="md" sx={{ marginTop: 3 }}>
             <Typography variant="h5" margin={1}>
-              Edit calendars
+              Edit Calendars
             </Typography>
             <Grid
               sx={{
@@ -87,37 +89,43 @@ const EditCalendars = () => {
                         </Avatar>
                       </ListItemAvatar>
                       <ListItemText
-                        primary={calendar.name}
+                        primary={
+                          <Typography variant="h6">{calendar.name}</Typography>
+                        }
                         secondary={calendar.description}
                       />
-                      {/* 캘린더 팀원, 팀장인지에 따라 버튼을 달리 표시 */}
-                      {!isCreator(calendar) && (
-                        <Button
-                          onClick={leaveHanlder}
-                          value={calendar._id}
-                          variant="contained"
-                          sx={{ width: 100, fontSize: 12 }}>
-                          leave
-                        </Button>
-                      )}
-                      {isCreator(calendar) && (
-                        <React.Fragment>
+                    </ListItem>
+                    <ListItem>
+                      <Box sx={{ marginLeft: "auto" }}>
+                        {/* 캘린더 팀원, 팀장인지에 따라 버튼을 달리 표시 */}
+                        {!isCreator(calendar) && (
                           <Button
-                            onClick={changeOwnerHandler}
-                            value={calendar._id}
-                            variant="outlined"
-                            sx={{ mr: 1, width: 100, fontSize: 12 }}>
-                            Change Owner
-                          </Button>
-                          <Button
-                            onClick={deleteHandler}
+                            onClick={leaveHanlder}
                             value={calendar._id}
                             variant="contained"
-                            sx={{ width: 100, fontSize: 12 }}>
-                            Delete
+                            sx={{ width: 100 }}>
+                            Leave
                           </Button>
-                        </React.Fragment>
-                      )}
+                        )}
+                        {isCreator(calendar) && (
+                          <React.Fragment>
+                            <Button
+                              onClick={changeOwnerHandler}
+                              value={calendar._id}
+                              variant="outlined"
+                              sx={{ mr: 1, width: 170 }}>
+                              Change Owner
+                            </Button>
+                            <Button
+                              onClick={deleteHandler}
+                              value={calendar._id}
+                              variant="contained"
+                              sx={{ width: 100 }}>
+                              Delete
+                            </Button>
+                          </React.Fragment>
+                        )}
+                      </Box>
                     </ListItem>
                     {!calendars.length === index + 1 && (
                       <Divider sx={{ mx: 2, my: 0.5 }} />
