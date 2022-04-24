@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Title, useAuthState, Loading } from "react-admin";
 import {
   Card,
@@ -15,26 +15,7 @@ import {
   Box,
 } from "@mui/material";
 import FolderIcon from "@mui/icons-material/Folder";
-
-// JSON 형식으로 받을 캘린더들(더미)
-let calendars = [
-  {
-    _id: "61d6cf33bffd707ad9702853",
-    name: "Hello World!",
-    description: "description1",
-    creator: "Captain1",
-    member: "Captain1",
-    timestamps: "2022-01-05 13:00",
-  },
-  {
-    _id: "61d6cf33bffd707ad9702854",
-    name: "dummy calendar2",
-    description: "description222222",
-    creator: "Captain2",
-    member: "Captain1",
-    timestamps: "2022-01-06 13:00",
-  },
-];
+import axios from "axios";
 
 const isCreator = (calendar) => {
   return calendar.creator === calendar.member;
@@ -42,6 +23,22 @@ const isCreator = (calendar) => {
 
 const EditCalendars = () => {
   const { isLoading, authenticated } = useAuthState();
+  const [calendars, setCalendars] = useState([]);
+
+  const getCalendars = async () => {
+    const response = await axios(
+      `${process.env.REACT_APP_BACKEND_URL}/calendar/`,
+      {
+        withCredentials: true,
+      }
+    );
+    setCalendars(await response.data.calendars);
+  };
+
+  useEffect(() => {
+    // console.log("in MyMenu");
+    getCalendars();
+  }, []);
 
   // 탈퇴 -> 탈퇴 완료시 캘린더 삭제된 결과 표시 필요
   const leaveHanlder = (event) => {
@@ -54,11 +51,29 @@ const EditCalendars = () => {
     console.log(event);
   };
   // 삭제 -> 삭제완료시 캘린더 삭제된 결과 표시 필요
-  const deleteHandler = (event) => {
-    alert("in deleteHanlder");
-    console.log(event.target.value);
-  };
+  const deleteHandler = async (event) => {
+    event.preventDefault();
+    if (window.confirm("Are you sure you want to delete this calendar?")) {
+      const CalendarId = event.target.value;
 
+      try {
+        const response = await axios({
+          url: `${process.env.REACT_APP_BACKEND_URL}/calendar/${CalendarId}`,
+          method: "delete",
+          withCredentials: true,
+        });
+
+        if (response.status === 200) {
+          alert("Calendar deleted");
+          window.location.reload();
+        }
+      } catch (e) {
+        throw new Error();
+      }
+    } else {
+      return;
+    }
+  };
   if (isLoading) {
     return <Loading />;
   }
@@ -77,7 +92,8 @@ const EditCalendars = () => {
                 borderColor: "grey.200",
                 borderRadius: "10px",
                 p: 1,
-              }}>
+              }}
+            >
               <List>
                 {calendars.map((calendar, index) => (
                   <React.Fragment key={calendar._id}>
@@ -103,7 +119,8 @@ const EditCalendars = () => {
                             onClick={leaveHanlder}
                             value={calendar._id}
                             variant="contained"
-                            sx={{ width: 100 }}>
+                            sx={{ width: 100 }}
+                          >
                             Leave
                           </Button>
                         )}
@@ -113,14 +130,16 @@ const EditCalendars = () => {
                               onClick={changeOwnerHandler}
                               value={calendar._id}
                               variant="outlined"
-                              sx={{ mr: 1, width: 170 }}>
+                              sx={{ mr: 1, width: 170 }}
+                            >
                               Change Owner
                             </Button>
                             <Button
                               onClick={deleteHandler}
                               value={calendar._id}
                               variant="contained"
-                              sx={{ width: 100 }}>
+                              sx={{ width: 100 }}
+                            >
                               Delete
                             </Button>
                           </React.Fragment>
@@ -139,7 +158,6 @@ const EditCalendars = () => {
       </React.Fragment>
     );
   }
-  return null;
 };
 
 export default EditCalendars;

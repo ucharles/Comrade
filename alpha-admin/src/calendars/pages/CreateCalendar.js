@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Title, useAuthState, Loading } from "react-admin";
 
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
-import { Card } from "@mui/material";
+import { Card, FormControl } from "@mui/material";
 import { styled } from "@mui/material/styles";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
@@ -12,6 +12,7 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
+import axios from "axios";
 
 const theme = createTheme();
 
@@ -24,6 +25,8 @@ export default function CreateCalendar() {
 
   const [file, setFile] = useState();
   const [previewUrl, setPreviewUrl] = useState();
+
+  const inputText = useRef([]);
 
   useEffect(() => {
     if (!isLoading && authenticated) {
@@ -49,18 +52,38 @@ export default function CreateCalendar() {
     }
   };
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    // eslint-disable-next-line no-console
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    const formData = new FormData(event.currentTarget);
+    formData.append("name", formData.get("calendarName"));
+    formData.delete("calendarName");
+    formData.append("image", file);
+
+    try {
+      const response = await axios({
+        url: `${process.env.REACT_APP_BACKEND_URL}/calendar/`,
+        method: "post",
+        data: formData,
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      if (response.status === 201) {
+        alert("Calendar added");
+        resetHandler();
+        window.location.reload();
+      }
+    } catch (e) {
+      throw Error(e);
+    }
   };
 
   const resetHandler = (event) => {
     event.preventDefault();
+    inputText.current[0].value = "";
+    inputText.current[1].value = "";
     setPreviewUrl(null);
   };
 
@@ -80,15 +103,18 @@ export default function CreateCalendar() {
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
-              }}>
+              }}
+            >
               <Typography component="h1" variant="h5">
                 Create New Calendar
               </Typography>
-              <Box
+              <FormControl
                 component="form"
                 noValidate
                 onSubmit={handleSubmit}
-                sx={{ mt: 3 }}>
+                sx={{ mt: 3 }}
+                //inputref={textInput}
+              >
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
                     <TextField
@@ -97,6 +123,7 @@ export default function CreateCalendar() {
                       fullWidth
                       id="calendarName"
                       label="Calendar Name"
+                      inputRef={(el) => (inputText.current[0] = el)}
                     />
                   </Grid>
                   <Grid item xs={12}>
@@ -106,18 +133,9 @@ export default function CreateCalendar() {
                       id="description"
                       label="Description"
                       name="description"
+                      inputRef={(el) => (inputText.current[1] = el)}
                     />
                   </Grid>
-                  <Grid item xs={12}>
-                    <TextField
-                      fullWidth
-                      id="numberOfMember"
-                      type="number"
-                      label="Number of member"
-                      name="numberOfMember"
-                    />
-                  </Grid>
-
                   <Grid item xs={12}>
                     Image Preview
                   </Grid>
@@ -138,20 +156,13 @@ export default function CreateCalendar() {
                       </Button>
                     </label>
                   </Grid>
-                  {/* <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox value="allowExtraEmails" color="primary" />
-                  }
-                  label="I want to receive inspiration, marketing promotions and updates via email."
-                />
-              </Grid> */}
                 </Grid>
                 <Button
                   type="submit"
                   fullWidth
                   variant="contained"
-                  sx={{ mt: 3, mb: 1 }}>
+                  sx={{ mt: 3, mb: 1 }}
+                >
                   Create
                 </Button>
                 <Button
@@ -159,10 +170,11 @@ export default function CreateCalendar() {
                   fullWidth
                   variant="outlined"
                   sx={{ mt: 1, mb: 1 }}
-                  onClick={resetHandler}>
+                  onClick={resetHandler}
+                >
                   Reset
                 </Button>
-              </Box>
+              </FormControl>
             </Box>
           </Container>
         </Card>

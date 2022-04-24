@@ -315,9 +315,9 @@ const deleteCalendar = async (req, res, next) => {
   }
 
   // 이미지 삭제
-  // fs.unlink(imagePath, (err) => {
-  //   err === null ? console.log("delete image: " + imagePath) : console.log(err);
-  // });
+  fs.unlink(imagePath, (err) => {
+    err === null ? console.log("delete image: " + imagePath) : console.log(err);
+  });
   res.status(200).json({ message: "Deleted Calendar." });
 };
 
