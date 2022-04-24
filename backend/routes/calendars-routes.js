@@ -12,7 +12,6 @@ router.use(checkAuth);
 router.get("/", calendarsControllers.getCalendarsByUserId);
 router.get("/admin", calendarsControllers.getCalendarAdminByUserId);
 router.get("/:calendarId", calendarsControllers.getCalendarByCalendarId);
-
 router.post(
   "/",
   fileUpload.single("image"),
@@ -37,6 +36,10 @@ router.patch("/admin", calendarsControllers.setMemberToAdministratorOrNot);
 router.patch("/owner", calendarsControllers.setMemberToOwner);
 
 router.delete("/:calendarId", calendarsControllers.deleteCalendar);
+router.delete(
+  "/:calendarId/itself",
+  calendarsControllers.deleteItselfFromCalendar
+);
 router.delete(
   "/:calendarId/:userId",
   calendarsControllers.deleteUserFromCalendar

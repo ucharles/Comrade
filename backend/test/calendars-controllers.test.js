@@ -227,15 +227,7 @@ describe("POST /api/calendar", () => {
     const url = `/api/calendar`;
     await request(app)
       .post(url)
-      .set(
-        { cookie: cookie },
-        {
-          originalname: "sample.name",
-          mimetype: "sample.type",
-          path: "sample.url",
-          buffer: Buffer.from("whatever"),
-        }
-      )
+      .set({ cookie: cookie })
       .send(calendarData)
       .then(async (res) => {
         expect(res.statusCode).toBe(201);
@@ -264,15 +256,7 @@ describe("PATCH /api/calendar", () => {
     const url = `/api/calendar`;
     await request(app)
       .patch(url)
-      .set(
-        { cookie: cookie },
-        {
-          originalname: "sample.name",
-          mimetype: "sample.type",
-          path: "sample.url",
-          buffer: Buffer.from("whatever"),
-        }
-      )
+      .set({ cookie: cookie })
       .send(calendarData)
       .then(async (res) => {
         expect(res.statusCode).toBe(200);
@@ -297,15 +281,7 @@ describe("PATCH /api/calendar/member", () => {
     const url = `/api/calendar/member`;
     await request(app)
       .patch(url)
-      .set(
-        { cookie: cookie },
-        {
-          originalname: "sample.name",
-          mimetype: "sample.type",
-          path: "sample.url",
-          buffer: Buffer.from("whatever"),
-        }
-      )
+      .set({ cookie: cookie })
       .send(calendarData)
       .then(async (res) => {
         expect(res.statusCode).toBe(200);
@@ -330,15 +306,7 @@ describe("PATCH /api/calendar/admin", () => {
     const url = `/api/calendar/admin`;
     await request(app)
       .patch(url)
-      .set(
-        { cookie: cookie },
-        {
-          originalname: "sample.name",
-          mimetype: "sample.type",
-          path: "sample.url",
-          buffer: Buffer.from("whatever"),
-        }
-      )
+      .set({ cookie: cookie })
       .send(calendarAdminData)
       .then(async (res) => {
         expect(res.statusCode).toBe(200);
@@ -366,15 +334,7 @@ describe("PATCH /api/calendar/owner", () => {
     const url = `/api/calendar/owner`;
     await request(app)
       .patch(url)
-      .set(
-        { cookie: cookie },
-        {
-          originalname: "sample.name",
-          mimetype: "sample.type",
-          path: "sample.url",
-          buffer: Buffer.from("whatever"),
-        }
-      )
+      .set({ cookie: cookie })
       .send(calendarOwnerData)
       .then(async (res) => {
         expect(res.statusCode).toBe(200);
@@ -394,15 +354,7 @@ describe("DELETE /api/calendar/:calendarId", () => {
     const url = `/api/calendar/5cabe64dcf0d4447fa60f5e3`;
     await request(app)
       .delete(url)
-      .set(
-        { cookie: cookie },
-        {
-          originalname: "sample.name",
-          mimetype: "sample.type",
-          path: "sample.url",
-          buffer: Buffer.from("whatever"),
-        }
-      )
+      .set({ cookie: cookie })
       .then(async (res) => {
         expect(res.statusCode).toBe(200);
         expect(res.body.message).toEqual("Deleted Calendar.");
@@ -411,7 +363,7 @@ describe("DELETE /api/calendar/:calendarId", () => {
 });
 
 describe("DELETE /api/calendar/:calendarId/:userId", () => {
-  test("/api/calendar/:calendarId", async () => {
+  test("/api/calendar/:calendarId/:userId", async () => {
     const loginResponse = await request(app)
       .post(`/api/users/login`)
       .send({ email: "hhh1@hhh.com", password: "123123" });
@@ -421,17 +373,28 @@ describe("DELETE /api/calendar/:calendarId/:userId", () => {
     const url = `/api/calendar/5cabe64dcf0d4447fa60f5e2/5cabe64dcf0d4447fa60f5e6`;
     await request(app)
       .delete(url)
-      .set(
-        { cookie: cookie },
-        {
-          originalname: "sample.name",
-          mimetype: "sample.type",
-          path: "sample.url",
-          buffer: Buffer.from("whatever"),
-        }
-      )
+      .set({ cookie: cookie })
       .then(async (res) => {
         expect(res.statusCode).toBe(200);
+        expect(res.body.message).toEqual("Deleted user in calendar.");
+      });
+  });
+});
+
+describe("DELETE /api/calendar/:calendarId/itself", () => {
+  test("/api/calendar/:calendarId/itself", async () => {
+    const loginResponse = await request(app)
+      .post(`/api/users/login`)
+      .send({ email: "hhh1@hhh.com", password: "123123" });
+
+    const cookie = loginResponse.headers["set-cookie"];
+
+    const url = `/api/calendar/5cabe64dcf0d4447fa60f5e2/itself`;
+    await request(app)
+      .delete(url)
+      .set({ cookie: cookie })
+      .then(async (res) => {
+        expect(res.statusCode).toBe(201);
         expect(res.body.message).toEqual("Deleted user in calendar.");
       });
   });

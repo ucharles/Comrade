@@ -168,8 +168,6 @@ const createCalendar = async (req, res, next) => {
 };
 
 const updateCalendarById = async (req, res, next) => {
-  // 달력 정보 업데이트... 유저 제명 기능도 넣어야 하나?
-  // 유저 제명 기능은 따로 두는게 나을지도..??
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return next(
@@ -282,26 +280,16 @@ const deleteCalendar = async (req, res, next) => {
     return next(error);
   }
 
-  let events;
-  try {
-    events = await Event.find({ calendar: calendarId }).exec();
-  } catch (err) {
-    const error = new HttpError("Can not found calendar by id.", 500);
-    return next(error);
-  }
-
   const imagePath = calendar.image;
 
   try {
     const sess = await mongoose.startSession();
     await sess.withTransaction(async () => {
       for (member of calendar.members) {
-        events.length !== 0 ? await events.deleteMany({ session: sess }) : null;
         member._id.calendars.pull(calendar);
-
         await member._id.save({ session: sess });
       }
-
+      await Event.deleteMany({ calendar: calendarId }).session(sess);
       await calendar.delete({ session: sess });
       // calendar -> owner -> (user) calendars 제거
     });
@@ -315,9 +303,13 @@ const deleteCalendar = async (req, res, next) => {
   }
 
   // 이미지 삭제
-  fs.unlink(imagePath, (err) => {
-    err === null ? console.log("delete image: " + imagePath) : console.log(err);
-  });
+  if (imagePath) {
+    fs.unlink(imagePath, (err) => {
+      err === null
+        ? console.log("delete image: " + imagePath)
+        : console.log(err);
+    });
+  }
   res.status(200).json({ message: "Deleted Calendar." });
 };
 
@@ -542,17 +534,6 @@ const deleteUserFromCalendar = async (req, res, next) => {
     return next(error);
   }
 
-  // 삭제할 유저의 이벤트 추출
-  try {
-    events = await Event.find({
-      calendar: calendarId,
-      creator: deleteUserId,
-    }).exec();
-  } catch (err) {
-    const error = new HttpError("Can not found calendar by id.", 500);
-    return next(error);
-  }
-
   // 삭제할 유저의 calendar.members 의 인덱스를 추출
   const deleteUserIndex = calendar.members.findIndex((v) => {
     return v._id.toString() === deleteUserId;
@@ -561,9 +542,13 @@ const deleteUserFromCalendar = async (req, res, next) => {
   try {
     const sess = await mongoose.startSession();
     await sess.withTransaction(async () => {
-      events.length !== 0 ? await events.deleteMany({ session: sess }) : null;
-      calendar.members.splice(deleteUserIndex, 1);
+      // 이벤트 삭제
+      await Event.deleteMany({
+        calendar: calendarId,
+        creator: deleteUserId,
+      }).session(sess);
       // 캘린더에서 유저 정보 삭제
+      calendar.members.splice(deleteUserIndex, 1);
       await calendar.save({ session: sess });
     });
     sess.endSession();
@@ -577,6 +562,62 @@ const deleteUserFromCalendar = async (req, res, next) => {
   res.status(200).json({ message: "Deleted user in calendar." });
 };
 
+const deleteItselfFromCalendar = async (req, res, next) => {
+  // 자기 자신을 calendar 에서 제외
+  const userId = req.userData.userId;
+  const calendarId = req.params.calendarId;
+
+  let calendar;
+  try {
+    calendar = await Calendar.findById(calendarId);
+  } catch (err) {
+    const error = new HttpError("Something failed, please try again", 500);
+    return next(error);
+  }
+
+  // 쿠키 유저가 캘린더 주인이 아닌지 확인
+  if (calendar.owner === userId) {
+    const error = new HttpError("You are not allowed to this process.", 403);
+    return next(error);
+  }
+
+  // 입력된 유저가 캘린더에 속해있는지 확인
+  if (
+    calendar.members.find((v) => {
+      return v._id.toString() === userId;
+    }) === undefined
+  ) {
+    const error = new HttpError("Don't exist user in calendar.", 404);
+    return next(error);
+  }
+
+  // 삭제할 유저의 calendar.members 의 인덱스를 추출
+  const deleteUserIndex = calendar.members.findIndex((v) => {
+    return v._id.toString() === userId;
+  });
+
+  try {
+    const sess = await mongoose.startSession();
+    await sess.withTransaction(async () => {
+      // 이벤트 삭제
+      await Event.deleteMany({
+        calendar: calendarId,
+        creator: userId,
+      }).session(sess);
+      // 캘린더에서 유저 정보 삭제
+      calendar.members.splice(deleteUserIndex, 1);
+      await calendar.save({ session: sess });
+    });
+    sess.endSession();
+  } catch (err) {
+    console.log(err);
+    const error = new HttpError("DB Error", 500);
+    return next(error);
+  }
+
+  res.status(201).json({ message: "Deleted user in calendar." });
+};
+
 exports.getCalendarsByUserId = getCalendarsByUserId;
 exports.getCalendarByCalendarId = getCalendarByCalendarId;
 exports.getCalendarAdminByUserId = getCalendarAdminByUserId;
@@ -587,3 +628,4 @@ exports.addMemberToCalendar = addMemberToCalendar;
 exports.setMemberToAdministratorOrNot = setMemberToAdministratorOrNot;
 exports.setMemberToOwner = setMemberToOwner;
 exports.deleteUserFromCalendar = deleteUserFromCalendar;
+exports.deleteItselfFromCalendar = deleteItselfFromCalendar;

@@ -182,6 +182,11 @@ cookie: at(userId), rt(uuid)
 - **/api/calendar/:calendarId**
   - deleteCalendar
   - cookie: at(userId)
+- **/api/calendar/:calendarId/itself**
+  - deleteItselfFromCalendar
+  - cookie: at(userId)
+  - 유저가 스스로 캘린더를 탈퇴(Leave)할 경우 사용
+  - 캘린더 owner는 사용 불가(deleteCalendar 를 이용하도록 함)
 - **/api/calendar/:calendarId/:userId**
   - deleteUserFromCalendar
   - cookie: at(userId)
