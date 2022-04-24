@@ -1,15 +1,8 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useEffect } from "react";
 import Divider from "@mui/material/Divider";
-import Collapse from "@mui/material/Collapse";
 import Avatar from "@mui/material/Avatar";
 import Box from "@mui/material/Box";
-import ListItemButton from "@mui/material/ListItemButton";
 import SettingsIcon from "@mui/icons-material/Settings";
-import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import ExpandLess from "@mui/icons-material/ExpandLess";
-import ExpandMore from "@mui/icons-material/ExpandMore";
 import LogoutIcon from "@mui/icons-material/Logout";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
@@ -20,6 +13,8 @@ import {
   useAuthState,
   Loading,
 } from "react-admin";
+import axios from "axios";
+
 //import AuthContext from "../shared/util/auth-context";
 
 function stringToColor(string) {
@@ -53,38 +48,35 @@ function stringAvatar(name, width, height) {
   };
 }
 
-// JSON 형식으로 받을 캘린더들(더미)
-let calendars = [
-  {
-    _id: "61d6cf33bffd707ad9702853",
-    name: "Dummy calendar1",
-    description: "description1",
-    iconSrc: "https://www.1999.co.jp/itbig81/10812608.jpg",
-    creator: "Captain1",
-  },
-  {
-    _id: "61d6cf33bffd707ad9702854",
-    name: "Dummy calendar2",
-    description: "description222222",
-    iconSrc: "",
-    creator: "Captain2",
-  },
-];
-
 const MyMenu = (props) => {
   const { isLoading, authenticated } = useAuthState();
-
-  const [open, setOpen] = useState(true);
+  const [calendars, setCalendars] = useState([]);
   const [selectedIndex, setSelectedIndex] = useState();
 
   const handleListItemClick = (event, index) => {
     setSelectedIndex(index);
   };
 
+  const fetchCalendars = async () => {
+    try {
+      const response = await axios(
+        `${process.env.REACT_APP_BACKEND_URL}/calendar/`,
+        {
+          withCredentials: true,
+        }
+      );
+      if (response.status === 200) {
+        setCalendars(response.data.calendars);
+      }
+    } catch (err) {}
+  };
+
+  useEffect(() => {
+    fetchCalendars();
+  }, []);
+
   const logout = useLogout();
   const handleLogout = () => logout();
-
-  //const authCtx = useContext(AuthContext);
 
   if (isLoading) {
     return <Loading />;
@@ -101,11 +93,11 @@ const MyMenu = (props) => {
               selected={selectedIndex === index}
               primaryText={calendar.name}
               leftIcon={
-                calendar.iconSrc ? (
+                calendar.image ? (
                   <Box sx={{ paddingRight: 1.5 }}>
                     <Avatar
                       sx={{ width: 35, height: 35 }}
-                      src={calendar.iconSrc}
+                      src={`${process.env.REACT_APP_ASSET_URL}/${calendar.image}`}
                     />
                   </Box>
                 ) : (
