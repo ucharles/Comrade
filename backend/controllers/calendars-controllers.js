@@ -19,10 +19,16 @@ const getCalendarsByUserId = async (req, res, next) => {
     return next(error);
   }
 
-  if (!userWithCalendars || userWithCalendars.calendars.length === 0) {
-    return next(
-      new HttpError("Could not find calendars for the privided id", 404)
-    ); // will be trigger: error handling middleware
+  if (
+    !userWithCalendars ||
+    userWithCalendars.calendars === undefined ||
+    userWithCalendars.calendars.length === 0
+  ) {
+    const error = new HttpError(
+      "Could not find calendars for the privided id",
+      404
+    );
+    return next(error);
   }
 
   for (let calendar of userWithCalendars.calendars) {
@@ -76,10 +82,16 @@ const getCalendarAdminByUserId = async (req, res, next) => {
     return next(error);
   }
 
-  if (!userWithCalendars || userWithCalendars.calendars.length === 0) {
-    return next(
-      new HttpError("Could not find calendars for the privided id", 404)
-    ); // will be trigger: error handling middleware
+  if (
+    !userWithCalendars ||
+    userWithCalendars.calendars === undefined ||
+    userWithCalendars.calendars.length === 0
+  ) {
+    const error = new HttpError(
+      "Could not find calendars for the privided id",
+      404
+    );
+    return next(error);
   }
 
   let calendarAdmin = [];
