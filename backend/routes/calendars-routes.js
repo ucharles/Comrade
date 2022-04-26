@@ -17,7 +17,7 @@ router.post(
   fileUpload.single("image"),
   [
     check("name").not().isEmpty().isLength({ min: 5, max: 15 }),
-    check("description").isLength({ min: 5, max: 50 }),
+    check("description").isLength({ max: 50 }),
   ],
   calendarsControllers.createCalendar
 );
@@ -27,7 +27,7 @@ router.patch(
   fileUpload.single("image"),
   [
     check("name").not().isEmpty().isLength({ min: 5, max: 15 }),
-    check("description").isLength({ min: 5, max: 50 }),
+    check("description").isLength({ max: 50 }),
   ],
   calendarsControllers.updateCalendarById
 );
