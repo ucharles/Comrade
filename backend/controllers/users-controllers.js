@@ -412,6 +412,7 @@ const logout = (req, res, next) => {
   res.clearCookie("loggedIn");
   res.clearCookie("at");
   res.clearCookie("rt");
+  res.clearCookie("tz");
   res.status(200).send();
 };
 
