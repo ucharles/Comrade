@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useRef } from "react";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -6,29 +6,70 @@ import TextField from "@mui/material/TextField";
 import Link from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
+import Alert from "@mui/material/Alert";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Copyright from "../../shared/components/UIElements/Copyright";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const theme = createTheme();
 
 export default function SignUp() {
-  const handleSubmit = (event) => {
+  const [showAlert, setShowAlert] = useState(false);
+  const [errorMessage, setErrorMessgae] = useState("");
+  const inputText = useRef([]);
+
+  const navigate = useNavigate();
+
+  const handleSubmit = async (event) => {
     event.preventDefault();
-    const data = new FormData(event.currentTarget);
-    // eslint-disable-next-line no-console
-    console.log({
-      email: data.get("email"),
-      password: data.get("password"),
-    });
+    const formData = new FormData(event.currentTarget);
+
+    event.preventDefault();
+    if (window.confirm("Are you sure you want to proceed?")) {
+      try {
+        const response = await axios({
+          url: `${process.env.REACT_APP_BACKEND_URL}/users/signup`,
+          method: "POST",
+          withCredentials: true,
+          data: formData,
+        });
+
+        if (response.status >= 200 && response.status <= 300) {
+          alert("Success. Your account has been saved. Please login.");
+          navigate("/login");
+        }
+      } catch (e) {
+        setErrorMessgae(e.response.data.message);
+        setShowAlert(true);
+        if (
+          e.response.data.message ===
+          "User exists already, please login instead."
+        ) {
+          inputText.current[1].focus();
+        } else if (
+          e.response.data.message ===
+          "Password unmatch. Please confirm password."
+        ) {
+          inputText.current[2].focus();
+        } else {
+          inputText.current[0].focus();
+        }
+        throw new Error();
+      }
+    } else {
+      return;
+    }
   };
 
   return (
     <ThemeProvider theme={theme}>
       <Container component="main" maxWidth="xs">
         <CssBaseline />
+
         <Box
           sx={{
             marginTop: 8,
@@ -50,6 +91,11 @@ export default function SignUp() {
             sx={{ mt: 3 }}
           >
             <Grid container spacing={2}>
+              {showAlert && (
+                <Grid item xs={12}>
+                  <Alert severity="error">{errorMessage}</Alert>
+                </Grid>
+              )}
               <Grid item xs={12}>
                 <TextField
                   name="username"
@@ -57,6 +103,7 @@ export default function SignUp() {
                   fullWidth
                   id="username"
                   label="Username"
+                  inputRef={(el) => (inputText.current[0] = el)}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -66,6 +113,7 @@ export default function SignUp() {
                   id="email"
                   label="Email Address"
                   name="email"
+                  inputRef={(el) => (inputText.current[1] = el)}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -76,6 +124,7 @@ export default function SignUp() {
                   label="Password"
                   type="password"
                   id="password"
+                  inputRef={(el) => (inputText.current[2] = el)}
                 />
               </Grid>
               <Grid item xs={12}>
@@ -86,17 +135,9 @@ export default function SignUp() {
                   label="Confirm Password"
                   type="password"
                   id="confirmPassword"
+                  inputRef={(el) => (inputText.current[3] = el)}
                 />
               </Grid>
-
-              {/* <Grid item xs={12}>
-                <FormControlLabel
-                  control={
-                    <Checkbox value="allowExtraEmails" color="primary" />
-                  }
-                  label="I want to receive inspiration, marketing promotions and updates via email."
-                />
-              </Grid> */}
             </Grid>
             <Button
               type="submit"
