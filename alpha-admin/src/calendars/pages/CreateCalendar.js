@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Title, useAuthState, Loading } from "react-admin";
 
+import Alert from "@mui/material/Alert";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import { Card, FormControl } from "@mui/material";
@@ -13,6 +14,7 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import axios from "axios";
+import { AlertModal } from "../../layout/Modals";
 
 const theme = createTheme();
 
@@ -25,8 +27,18 @@ export default function CreateCalendar() {
 
   const [file, setFile] = useState();
   const [previewUrl, setPreviewUrl] = useState();
+  const [showAlert, setShowAlert] = useState(false);
 
   const inputText = useRef([]);
+
+  // AlertModal State
+  const [alertModal, setAlertModalOpen] = useState(false);
+  const alertModalOpen = () => setAlertModalOpen(true);
+  const alertModalClose = () => {
+    setAlertModalOpen(false);
+    window.location.reload();
+  };
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     if (!isLoading && authenticated) {
@@ -54,29 +66,54 @@ export default function CreateCalendar() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    const formData = new FormData(event.currentTarget);
-    formData.append("name", formData.get("calendarName"));
-    formData.delete("calendarName");
-    formData.append("image", file);
+    let message;
+    let num;
+    // 유효성 검사
+    if (!inputText.current[0].value) {
+      message = `Calendar name is required.`;
+      num = 0;
+    } else if (
+      inputText.current[0].value.length < 5 ||
+      inputText.current[0].value.length > 15
+    ) {
+      message = `Calendar name must be between 5 and 15 characters`;
+      num = 0;
+    } else if (inputText.current[1].value.length > 50) {
+      message = `Calendar description must be no more than 50 characters`;
+      inputText.current[1].value.substr(0, 50);
+      num = 1;
+    }
 
-    try {
-      const response = await axios({
-        url: `${process.env.REACT_APP_BACKEND_URL}/calendar/`,
-        method: "post",
-        data: formData,
-        withCredentials: true,
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-      });
+    if (message) {
+      setErrorMessage(message);
+      setShowAlert(true);
+      inputText.current[num].focus();
+    } else {
+      const formData = new FormData(event.currentTarget);
+      formData.append("name", formData.get("calendarName"));
+      formData.delete("calendarName");
+      formData.append("image", file);
 
-      if (response.status === 201) {
-        alert("Calendar added");
-        resetHandler();
-        window.location.reload();
+      try {
+        const response = await axios({
+          url: `${process.env.REACT_APP_BACKEND_URL}/calendar/`,
+          method: "post",
+          data: formData,
+          withCredentials: true,
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        if (response.status === 201) {
+          resetHandler(event);
+          alertModalOpen();
+          setShowAlert(false);
+        }
+      } catch (e) {
+        setErrorMessage(e.response.data.message);
+        throw Error(e);
       }
-    } catch (e) {
-      throw Error(e);
     }
   };
 
@@ -116,6 +153,11 @@ export default function CreateCalendar() {
                 //inputref={textInput}
               >
                 <Grid container spacing={2}>
+                  {showAlert && (
+                    <Grid item xs={12}>
+                      <Alert severity="error">{errorMessage}</Alert>
+                    </Grid>
+                  )}
                   <Grid item xs={12}>
                     <TextField
                       name="calendarName"
@@ -128,7 +170,6 @@ export default function CreateCalendar() {
                   </Grid>
                   <Grid item xs={12}>
                     <TextField
-                      required
                       fullWidth
                       id="description"
                       label="Description"
@@ -165,6 +206,13 @@ export default function CreateCalendar() {
                 >
                   Create
                 </Button>
+                <AlertModal
+                  open={alertModal}
+                  close={alertModalClose}
+                  severity="success"
+                  message="Success"
+                  secondMessage="Calendar added"
+                />
                 <Button
                   type="reset"
                   fullWidth
