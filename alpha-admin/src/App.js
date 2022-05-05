@@ -89,9 +89,6 @@ const App = () => (
             </Authenticated>
           }
         />
-      </CustomRoutes>
-      <CustomRoutes noLayout>
-        <Route path="/signup" element={<SignUp />} />
         <Route
           path="/calendar/:cid/event/:date"
           element={
@@ -100,6 +97,9 @@ const App = () => (
             </Authenticated>
           }
         />
+      </CustomRoutes>
+      <CustomRoutes noLayout>
+        <Route path="/signup" element={<SignUp />} />
       </CustomRoutes>
       <Resource />
     </Admin>
