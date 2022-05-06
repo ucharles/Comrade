@@ -184,6 +184,7 @@ const generateIntersectionEventsByDay = (
               _id: uuid(),
               group: 1,
               title: timeTitle(st, et, timezone),
+              miniTitle: timeTitle(st, et, timezone, true),
               startTime: st,
               endTime: et,
               members: {
@@ -273,25 +274,23 @@ const getEventsByMonth = async (req, res, next) => {
     return next(error);
   }
 
-  // 제목 생성 필요?
   // 1. HH:MM~HH:MM
   // 2. HH:MM~ (OOm)
   // 3. HH:MM~HH:MM (OOm)
+  // 4. HHmm(?h?m) mini version
   for (element of events) {
-    let start = moment.tz(element.startTime, timezone);
-    let end = moment.tz(element.endTime, timezone);
-    let diff = end.diff(start) / 1000 / 60;
-
-    let hour = parseInt(diff / 60);
-    let min = diff % 60;
-
-    let timeAmount = "";
-    hour === 0 ? null : (timeAmount += `${hour}h`);
-    min === 0 ? null : (timeAmount += ` ${min}m`);
-
-    element.title = `${start.format("HH:mm")}~${end.format(
-      "HH:mm"
-    )} (${timeAmount})`;
+    element.title = timeTitle(
+      element.startTime,
+      element.endTime,
+      timezone,
+      false
+    );
+    element.miniTitle = timeTitle(
+      element.startTime,
+      element.endTime,
+      timezone,
+      true
+    );
   }
 
   res.status(200).json({
@@ -373,23 +372,18 @@ const getIntersectionEventsByDay = async (req, res, next) => {
   );
 
   for (element of events) {
-    let start = moment.tz(element.startTime, timezone);
-    let end = moment.tz(element.endTime, timezone);
-    let diff = end.diff(start) / 1000 / 60;
-
-    let hour = parseInt(diff / 60);
-    let min = diff % 60;
-
-    let timeAmount = "";
-    hour === 0 ? null : (timeAmount += `${hour}h`);
-    min === 0 ? null : (timeAmount += ` ${min}m`);
-
-    element.title = `${start.format("HH:mm")}~${end.format(
-      "HH:mm"
-    )} (${timeAmount})`;
-  }
-
-  for (element of events) {
+    element.title = timeTitle(
+      element.startTime,
+      element.endTime,
+      timezone,
+      false
+    );
+    element.miniTitle = timeTitle(
+      element.startTime,
+      element.endTime,
+      timezone,
+      true
+    );
     for (member of calendarMembers.members) {
       if (element.creator.toString() === member._id._id.toString()) {
         element.nickname = member.nickname;
@@ -397,6 +391,7 @@ const getIntersectionEventsByDay = async (req, res, next) => {
       }
     }
   }
+
   res
     .status(200)
     .json({ events: events, intersection: intersectionJson.slice(0, 6) });
@@ -610,26 +605,6 @@ const createEvents = async (req, res, next) => {
 
   let insertEventsArray = [];
 
-  // const timezoneTo5Digit = (timezone) => {
-  //   let timezoneReturn;
-  //   if (typeof timezone === "number" && timezone >= -11 && timezone <= 14) {
-  //     if (timezone > 0) {
-  //       timezone.toString().length === 1
-  //         ? (timezoneReturn = "+0" + timezone.toString() + "00")
-  //         : (timezoneReturn = "+" + timezone.toString() + "00");
-  //     } else {
-  //       timezone.toString().length === 2
-  //         ? (timezoneReturn = "-0" + timezone.toString().charAt(1) + "00")
-  //         : (timezoneReturn = timezone.toString() + "00");
-  //     }
-  //   } else {
-  //     const error = new HttpError("Invalid timezone value", 500);
-  //     return next(error);
-  //   }
-
-  //   return timezoneReturn;
-  // };
-
   date.sort((a, b) => {
     const dateA = moment.tz(a, timezone);
     const dateB = moment.tz(b, timezone);
@@ -684,13 +659,8 @@ const createEvents = async (req, res, next) => {
         count++;
       }
     }
-    // title 은 삭제 예정
     if (count === 0) {
       insertEventsArray.push({
-        // title:
-        //   addDay === 1
-        //     ? startTime + "~(next day)" + endTime
-        //     : startTime + "~" + endTime,
         startTime: st,
         endTime: et,
         calendar: calendarId,
