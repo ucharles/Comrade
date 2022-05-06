@@ -38,7 +38,7 @@ const getCalendarByInviteId = async (req, res, next) => {
   }
 
   // 초대 링크에 참여하려는 유저가 이미 해당 달력에 가입된 경우
-  if (calendar.members.find((v) => v._id.toString() === userId)) {
+  if (calendar.members.find((v) => v._id.toString() === req.userData.userId)) {
     res.status(200).json({
       _id: calendar._id,
       message: "Already invited.",

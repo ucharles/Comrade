@@ -67,7 +67,7 @@ const getCalendarByCalendarId = async (req, res, next) => {
   }
 
   res.status(200).json({
-    calendar: calendar.toObject({ getters: true }),
+    calendar,
   });
 };
 
@@ -376,6 +376,7 @@ const addMemberToCalendar = async (req, res, next) => {
     });
     sess.endSession();
   } catch (err) {
+    console.log(err);
     const error = new HttpError(
       "Can not found calendar by id, can not add member.",
       500

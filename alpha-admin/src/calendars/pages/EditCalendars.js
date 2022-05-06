@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import FolderIcon from "@mui/icons-material/Folder";
 import axios from "axios";
+import { ConfirmModal, AlertModal } from "../../layout/Modals";
 
 const isCreator = (calendar) => {
   return calendar.creator === calendar.member;
@@ -24,6 +25,20 @@ const isCreator = (calendar) => {
 const EditCalendars = () => {
   const { isLoading, authenticated } = useAuthState();
   const [calendars, setCalendars] = useState([]);
+  const [modalData, setModalData] = useState([]);
+
+  // ConfirmModal State
+  const [confirmModal, setConfirmModalOpen] = useState(false);
+  const confirmModalOpen = () => setConfirmModalOpen(true);
+  const confirmModalClose = () => setConfirmModalOpen(false);
+
+  // AlertModal State
+  const [alertModal, setAlertModalOpen] = useState(false);
+  const alertModalOpen = () => setAlertModalOpen(true);
+  const alertModalClose = () => {
+    setAlertModalOpen(false);
+    window.location.reload();
+  };
 
   const getCalendars = async () => {
     const response = await axios(
@@ -40,8 +55,38 @@ const EditCalendars = () => {
     getCalendars();
   }, []);
 
+  // confirmModal Open & confirm, alert Modal 데이터 설정.
+  const openConfirmModalHandler = (event) => {
+    event.preventDefault();
+    const value = event.target.value;
+    const mode = event.target.name;
+    let message;
+    let successMessage;
+    let action;
+    if (mode === "leave") {
+      message = "Are you sure you want to leave this calendar?";
+      successMessage = "You leaved";
+      action = leaveHandler;
+    } else if (mode === "ChangeOwner") {
+      message = "Are you sure you want to change the owner?";
+      successMessage = "Your changes have been successfully saved";
+      action = changeOwnerHandler;
+    } else {
+      message = "Are you sure you want to delete this calendar?";
+      successMessage = "Calendar deleted";
+      action = deleteHandler;
+    }
+    setModalData({
+      message: message,
+      action: action,
+      value: value,
+      successMessage: successMessage,
+    });
+    confirmModalOpen();
+  };
+
   // 탈퇴 -> 탈퇴 완료시 캘린더 삭제된 결과 표시 필요
-  const leaveHanlder = (event) => {
+  const leaveHandler = (event) => {
     alert("in leaveHandler");
     console.log(event.target.value);
   };
@@ -53,25 +98,19 @@ const EditCalendars = () => {
   // 삭제 -> 삭제완료시 캘린더 삭제된 결과 표시 필요
   const deleteHandler = async (event) => {
     event.preventDefault();
-    if (window.confirm("Are you sure you want to delete this calendar?")) {
-      const CalendarId = event.target.value;
+    confirmModalClose();
+    try {
+      const response = await axios({
+        url: `${process.env.REACT_APP_BACKEND_URL}/calendar/${event.target.value}`,
+        method: "delete",
+        withCredentials: true,
+      });
 
-      try {
-        const response = await axios({
-          url: `${process.env.REACT_APP_BACKEND_URL}/calendar/${CalendarId}`,
-          method: "delete",
-          withCredentials: true,
-        });
-
-        if (response.status === 200) {
-          alert("Calendar deleted");
-          window.location.reload();
-        }
-      } catch (e) {
-        throw new Error();
+      if (response.status === 200) {
+        alertModalOpen();
       }
-    } else {
-      return;
+    } catch (e) {
+      throw new Error();
     }
   };
   if (isLoading) {
@@ -116,10 +155,11 @@ const EditCalendars = () => {
                         {/* 캘린더 팀원, 팀장인지에 따라 버튼을 달리 표시 */}
                         {!isCreator(calendar) && (
                           <Button
-                            onClick={leaveHanlder}
+                            onClick={openConfirmModalHandler}
                             value={calendar._id}
                             variant="contained"
                             sx={{ width: 100 }}
+                            name="Leave"
                           >
                             Leave
                           </Button>
@@ -131,14 +171,16 @@ const EditCalendars = () => {
                               value={calendar._id}
                               variant="outlined"
                               sx={{ mr: 1, width: 170 }}
+                              name="ChangeOwner"
                             >
                               Change Owner
                             </Button>
                             <Button
-                              onClick={deleteHandler}
+                              onClick={openConfirmModalHandler}
                               value={calendar._id}
                               variant="contained"
                               sx={{ width: 100 }}
+                              name="Delete"
                             >
                               Delete
                             </Button>
@@ -151,6 +193,22 @@ const EditCalendars = () => {
                     )}
                   </React.Fragment>
                 ))}
+                <ConfirmModal
+                  open={confirmModal}
+                  close={confirmModalClose}
+                  severity="warning"
+                  message="warning"
+                  secondMessage={modalData.message}
+                  action={modalData.action}
+                  value={modalData.value}
+                />
+                <AlertModal
+                  open={alertModal}
+                  close={alertModalClose}
+                  severity="success"
+                  message="Success"
+                  secondMessage={modalData.successMessage}
+                />
               </List>
             </Grid>
           </Container>

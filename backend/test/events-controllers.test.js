@@ -107,43 +107,50 @@ beforeAll(async () => {
     {
       title: "123",
       startTime: "2022-01-22T11:00:00.000+00:00",
-      endTime: "2022-01-22T13:00:00.000+00:00",
+      endTime: "2022-01-22T15:00:00.000+00:00",
+      creator: userId,
+      calendar: calendarId,
+    },
+    {
+      title: "123",
+      startTime: "2022-01-23T11:00:00.000+00:00",
+      endTime: "2022-01-23T15:00:00.000+00:00",
+      creator: userId,
+      calendar: calendarId,
+    },
+    {
+      title: "123",
+      startTime: "2022-01-24T11:00:00.000+00:00",
+      endTime: "2022-01-24T15:00:00.000+00:00",
+      creator: userId,
+      calendar: calendarId,
+    },
+    {
+      title: "123",
+      startTime: "2022-01-25T11:00:00.000+00:00",
+      endTime: "2022-01-25T15:00:00.000+00:00",
       creator: userId,
       calendar: calendarId,
     },
     {
       title: "123",
       startTime: "2022-01-22T11:00:00.000+00:00",
-      endTime: "2022-01-22T16:15:00.000+00:00",
+      endTime: "2022-01-22T15:00:00.000+00:00",
       creator: userId2,
       calendar: calendarId,
     },
     {
       title: "123",
-      startTime: "2022-01-22T12:00:00.000+00:00",
-      endTime: "2022-01-22T16:00:00.000+00:00",
-      creator: userId3,
-      calendar: calendarId,
-    },
-    {
-      title: "123",
       startTime: "2022-01-23T11:00:00.000+00:00",
-      endTime: "2022-01-23T13:00:00.000+00:00",
-      creator: userId,
-      calendar: calendarId,
-    },
-    {
-      title: "123",
-      startTime: "2022-01-23T11:00:00.000+00:00",
-      endTime: "2022-01-23T16:15:00.000+00:00",
+      endTime: "2022-01-23T15:00:00.000+00:00",
       creator: userId2,
       calendar: calendarId,
     },
     {
       title: "123",
-      startTime: "2022-01-23T12:00:00.000+00:00",
-      endTime: "2022-01-23T16:00:00.000+00:00",
-      creator: userId3,
+      startTime: "2022-01-25T11:00:00.000+00:00",
+      endTime: "2022-01-25T15:00:00.000+00:00",
+      creator: userId2,
       calendar: calendarId,
     },
   ])
@@ -184,7 +191,7 @@ describe("GET /api/events/calendar/:calendarId/one-user-month/:date/:timezone", 
   });
 });
 
-describe("GET /api/events/calendar/:calendarId/int-day/:date/:timezone", () => {
+describe("GET /api/events/calendar/:calendarId/int-day/:date", () => {
   test("schedule test", async () => {
     const loginResponse = await request(app)
       .post(`/api/users/login`)
@@ -197,14 +204,14 @@ describe("GET /api/events/calendar/:calendarId/int-day/:date/:timezone", () => {
       )}`
     );
 
-    const url = `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/int-day/2022-01-22/`;
+    const url = `/api/events/calendar/5cabe64dcf0d4447fa60f5e2/int-day/2022-01-22`;
 
     await request(app)
       .get(url)
       .set({ cookie: cookie })
       .then(async (res) => {
         expect(res.statusCode).toBe(200);
-        expect(res.body.events).toStrictEqual("");
+        expect(res.body.intersection).toStrictEqual("");
         expect(res.body.intersection).toStrictEqual([
           {
             depth: 3,

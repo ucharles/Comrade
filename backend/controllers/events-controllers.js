@@ -7,6 +7,7 @@ const { validationResult } = require("express-validator");
 const Event = require("../models/event-model");
 const Calendar = require("../models/calendar-model");
 const { maxEndTime } = require("../util/max-end-time");
+const { timeTitle } = require("../util/time-title");
 
 const generateIntersectionEventsByDay = (
   events,
@@ -23,7 +24,7 @@ const generateIntersectionEventsByDay = (
   let eventMembers = [];
   let allSchedule = [];
 
-  // 교집합 작성 전처리: 멤버 * 15분 단위로 매트릭스 작성
+  // 교집합 작성 전처리: 이벤트 * 15분 단위로 매트릭스 작성
   for (let eventIndex = 0; eventIndex < events.length; eventIndex++) {
     eventMembers[eventIndex] = events[eventIndex].creator;
     let start = moment.tz(events[eventIndex].startTime, timezone);
@@ -34,7 +35,7 @@ const generateIntersectionEventsByDay = (
     // 열 채우기
     for (
       let scheduleIndex = 0;
-      scheduleIndex < lastDiffInitDiv;
+      scheduleIndex <= lastDiffInitDiv;
       scheduleIndex++
     ) {
       if (
@@ -42,11 +43,11 @@ const generateIntersectionEventsByDay = (
         scheduleIndex === startDiffInitDiv
       ) {
         schedule[scheduleIndex] = "S";
-      } else if (scheduleIndex === endDiffStartDiv + startDiffInitDiv - 1) {
+      } else if (scheduleIndex === endDiffStartDiv + startDiffInitDiv) {
         schedule[scheduleIndex] = "E";
       } else if (
         scheduleIndex > startDiffInitDiv &&
-        scheduleIndex < endDiffStartDiv + startDiffInitDiv - 1
+        scheduleIndex < endDiffStartDiv + startDiffInitDiv
       ) {
         schedule[scheduleIndex] = "1";
       } else {
@@ -64,7 +65,7 @@ const generateIntersectionEventsByDay = (
 
   // 전처리 매트릭스를 열방향(단위시간)으로 순회하며 교집합 판단 시작
   // 단위시간 * 멤버 로 구성된 매트릭스.
-  for (let timeDivIndex = 0; timeDivIndex < lastDiffInitDiv; timeDivIndex++) {
+  for (let timeDivIndex = 0; timeDivIndex <= lastDiffInitDiv; timeDivIndex++) {
     let endFlag = 0;
     for (
       let memberIndex = 0;
@@ -89,7 +90,8 @@ const generateIntersectionEventsByDay = (
         // E를 만난 경우, 현재의 인덱스를 저장
         endFlag = 1;
         let endMembers = [];
-        let minDiv = lastDiffInitDiv;
+        // ↓ 최소값 비교를 위해 최대 div를 저장
+        let minDiv = lastDiffInitDiv + 1;
 
         // 이벤트가 종료된 멤버를 따로 추려냄
         for (
@@ -112,9 +114,10 @@ const generateIntersectionEventsByDay = (
 
         // 교집합 작성 시작
         let currentDiv = timeDivIndex;
+        let lastIndexOfInterMembers = intersectionMembers.length - 1;
         for (
           let i = intersectionMembers.length - 1;
-          intersectionStart[i] >= minDiv;
+          intersectionStart[i] > minDiv;
           i--
         ) {
           let interMembersArray = [];
@@ -166,23 +169,31 @@ const generateIntersectionEventsByDay = (
                 calendarAllMembers.push(insertObject);
               }
             }
+
+            let st = moment
+              .tz(events[0].startTime, timezone)
+              .add(
+                intersectionStart[lastIndexOfInterMembers] * divMinute,
+                "minutes"
+              );
+            let et = moment
+              .tz(events[0].startTime, timezone)
+              .add(timeDivIndex * divMinute, "minutes");
             // 교집합 정보 작성
             intersectionJson.push({
-              id: uuid(),
-              startTime: moment
-                .tz(events[0].startTime, timezone)
-                .add(intersectionStart[i] * divMinute, "minutes"),
-              endTime: moment
-                .tz(events[0].startTime, timezone)
-                .add(timeDivIndex * divMinute, "minutes"),
+              _id: uuid(),
+              group: 1,
+              title: timeTitle(st, et, timezone),
+              startTime: st,
+              endTime: et,
               members: {
                 intersection: interMembersArray,
                 noIntersection: registeredMembersArray,
                 noEvent: calendarAllMembers,
               },
-              depth: timeDivIndex - intersectionStart[i],
+              depth: timeDivIndex - intersectionStart[lastIndexOfInterMembers],
             });
-            currentDiv = intersectionStart[i];
+            currentDiv = intersectionStart[lastIndexOfInterMembers];
           }
         }
 
@@ -360,7 +371,6 @@ const getIntersectionEventsByDay = async (req, res, next) => {
     timezone,
     divMinute
   );
-  console.log(intersectionJson);
 
   for (element of events) {
     let start = moment.tz(element.startTime, timezone);
@@ -379,6 +389,14 @@ const getIntersectionEventsByDay = async (req, res, next) => {
     )} (${timeAmount})`;
   }
 
+  for (element of events) {
+    for (member of calendarMembers.members) {
+      if (element.creator.toString() === member._id._id.toString()) {
+        element.nickname = member.nickname;
+        element.image = member._id.image;
+      }
+    }
+  }
   res
     .status(200)
     .json({ events: events, intersection: intersectionJson.slice(0, 6) });
@@ -454,7 +472,6 @@ const getIntersectionEventsByMonth = async (req, res, next) => {
   let events;
   let calendarMembers;
 
-  //
   // DB Query
   // 이벤트 호출 쿼리, 년월 기준 한달 분(Timezone 적용)
   // 캘린더 호출 쿼리
@@ -489,20 +506,24 @@ const getIntersectionEventsByMonth = async (req, res, next) => {
     );
     return next(error);
   }
-  // console.log(events);
-  // console.log(calendarMembers.members);
 
   if (events.length === 0) {
-    const error = new HttpError("Does not exist event Data.", 404);
+    const error = new HttpError("Does not exist event Data.", 200);
+    return next(error);
+  }
+  if (calendarMembers.members.length === 1) {
+    const error = new HttpError("Does not exist Intersection Data.", 200);
     return next(error);
   }
 
+  // 제일 이른 이벤트의 시작 시간
   let eventDividerByDate = moment.tz(events[0].startTime, timezone);
   let dayArray = [];
   let monthArray = [];
 
   // 한달치 이벤트를 일별로 분리
   for (let i = 0; i < events.length; i++) {
+    // 다음 이벤트의 날짜가 바뀐 경우, 날짜 갱신
     if (
       moment.tz(events[i].startTime, timezone).format("YYYYMMDD").toString() !==
       eventDividerByDate.format("YYYYMMDD").toString()
@@ -558,7 +579,6 @@ const getIntersectionEventsByMonth = async (req, res, next) => {
       ? intersectionByMonthJson.push(largestIntersection[0])
       : intersectionByMonthJson.push(largestIntersection);
   }
-  console.log(intersectionByMonthJson);
 
   // 이벤트 전역변수 출력
   res.status(200).json({ events: intersectionByMonthJson });
@@ -576,8 +596,7 @@ const createEvents = async (req, res, next) => {
     return next(error);
   }
 
-  const { date, startTime, endTime, timezone, calendarId, timezoneOffset } =
-    req.body;
+  const { date, startTime, endTime, timezone, calendarId } = req.body;
 
   let addDay = 0;
   const startDate = moment.tz("2022-01-01" + " " + startTime, timezone);
@@ -591,25 +610,25 @@ const createEvents = async (req, res, next) => {
 
   let insertEventsArray = [];
 
-  const timezoneTo5Digit = (timezone) => {
-    let timezoneReturn;
-    if (typeof timezone === "number" && timezone >= -11 && timezone <= 14) {
-      if (timezone > 0) {
-        timezone.toString().length === 1
-          ? (timezoneReturn = "+0" + timezone.toString() + "00")
-          : (timezoneReturn = "+" + timezone.toString() + "00");
-      } else {
-        timezone.toString().length === 2
-          ? (timezoneReturn = "-0" + timezone.toString().charAt(1) + "00")
-          : (timezoneReturn = timezone.toString() + "00");
-      }
-    } else {
-      const error = new HttpError("Invalid timezone value", 500);
-      return next(error);
-    }
+  // const timezoneTo5Digit = (timezone) => {
+  //   let timezoneReturn;
+  //   if (typeof timezone === "number" && timezone >= -11 && timezone <= 14) {
+  //     if (timezone > 0) {
+  //       timezone.toString().length === 1
+  //         ? (timezoneReturn = "+0" + timezone.toString() + "00")
+  //         : (timezoneReturn = "+" + timezone.toString() + "00");
+  //     } else {
+  //       timezone.toString().length === 2
+  //         ? (timezoneReturn = "-0" + timezone.toString().charAt(1) + "00")
+  //         : (timezoneReturn = timezone.toString() + "00");
+  //     }
+  //   } else {
+  //     const error = new HttpError("Invalid timezone value", 500);
+  //     return next(error);
+  //   }
 
-    return timezoneReturn;
-  };
+  //   return timezoneReturn;
+  // };
 
   date.sort((a, b) => {
     const dateA = moment.tz(a, timezone);
@@ -636,6 +655,7 @@ const createEvents = async (req, res, next) => {
       .sort({ startTime: 1, endTime: 1 })
       .exec();
   } catch (err) {
+    console.log(err);
     const error = new HttpError("Could not found events", 500);
     return next(error);
   }
@@ -647,8 +667,8 @@ const createEvents = async (req, res, next) => {
       const error = new HttpError("Invalid Date value", 500);
       return next(error);
     }
-    let startTime = moment.tz(value + " " + startTime, timezone);
-    let endTime = moment.tz(value + " " + endTime, timezone).add(addDay, "day");
+    let st = moment.tz(value + " " + startTime, timezone);
+    let et = moment.tz(value + " " + endTime, timezone).add(addDay, "day");
 
     // 같은 달력에 이벤트가 중복 등록된 경우, 제외 처리
     // 중복 등록을 찾기 위한 반복문 횟수가 너무 많다. 리팩토링 필요.
@@ -656,7 +676,7 @@ const createEvents = async (req, res, next) => {
     for (value of events) {
       let eventStartTime = moment.tz(value.startTime, timezone);
       let eventEndTime = moment.tz(value.endTime, timezone);
-      if (startTime >= eventStartTime && eventEndTime > startTime) {
+      if (st >= eventStartTime && eventEndTime > et) {
         conflictTime.push({
           startTime: eventStartTime,
           endTime: eventEndTime,
@@ -671,8 +691,10 @@ const createEvents = async (req, res, next) => {
         //   addDay === 1
         //     ? startTime + "~(next day)" + endTime
         //     : startTime + "~" + endTime,
-        startTime,
-        endTime,
+        startTime: st,
+        endTime: et,
+        calendar: calendarId,
+        creator: req.userData.userId,
       });
     }
   });
