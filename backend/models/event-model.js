@@ -15,6 +15,8 @@ const eventSchema = new Schema(
     },
     creator: { type: mongoose.Types.ObjectId, ref: "User" },
     calendar: { type: mongoose.Types.ObjectId, ref: "Calendar" },
+    nickname: { type: String },
+    image: { type: String },
   },
   { timestamps: true }
 );
