@@ -19,6 +19,7 @@ import axios from "axios";
 
 import { stringAvatar } from "../shared/util/stringToAvatar";
 import { AddMemberModal, EditMemberModal } from "./MemberModals";
+import { useMediaQuery } from "@mui/material";
 import "./Dashboard.css";
 
 const useStyles = makeStyles((theme) => ({
@@ -49,6 +50,7 @@ export const Dashboard = () => {
   const [EVENTS, setEvents] = useState([]);
   const [calendar, setCalendar] = useState({});
   const [inviteInfo, setInviteInfo] = useState({});
+  const matches = useMediaQuery("(max-width:767px)");
 
   const classes = useStyles();
   const navigate = useNavigate();
@@ -132,6 +134,9 @@ export const Dashboard = () => {
                 event.start = event.startTime;
                 event.end = event.endTime;
                 event.resourceId = 1;
+                if (matches) {
+                  event.title = event.miniTitle;
+                }
               }
               console.log("events: ");
               console.log(fetchMonthRes.data.events);
@@ -146,6 +151,9 @@ export const Dashboard = () => {
                 event.start = event.startTime;
                 event.end = event.endTime;
                 event.resourceId = 0;
+                if (matches) {
+                  event.title = event.miniTitle;
+                }
               }
               console.log("Intersection: ");
               console.log(fetchInterMonthRes.data.events);
@@ -163,20 +171,10 @@ export const Dashboard = () => {
     };
     fetchEventsInFullCalendar();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isLoading, authenticated, calendarId, inputDate]);
+  }, [isLoading, authenticated, calendarId, inputDate, matches]);
 
   console.log("Setted EVENTS");
   console.log(EVENTS);
-
-  // const EVENTS = [
-  //   {
-  //     id: 1,
-  //     title: "event 2",
-  //     start: "2022-01-01T12:30:00Z",
-  //     end: "2022-01-01T14:00:00Z",
-  //     resourceId: 1,
-  //   },
-  // ];
 
   let path = `/calendar/${calendarId}/date/`;
 
