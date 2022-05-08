@@ -1,17 +1,20 @@
 import React, { useState } from "react";
-import moment from "moment";
+import moment from "moment-timezone";
+import { Cookies } from "react-cookie";
 import IconButton from "@mui/material/IconButton";
 import { Avatar, Box, Button, Typography, Tooltip } from "@mui/material";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { DataGrid } from "@mui/x-data-grid";
 import Tabs from "../shared/components/UIElements/Tabs";
-import List from "../shared/components/UIElements/List";
 import CloseIcon from "@mui/icons-material/Close";
 
 import Modal from "@mui/material/Modal";
 
 const EventModal = (props) => {
   const [selectionModel, setSeletionModel] = useState([]);
+  const cookies = new Cookies();
+  const timezone = decodeURIComponent(cookies.get("tz"));
+
   const deleteHandler = () => {
     alert("Are you sure you want to delete members");
     console.log(selectionModel);
@@ -43,16 +46,15 @@ const EventModal = (props) => {
           </Box>
           <Box id="modal-modal-description" sx={{ marginTop: 2 }}>
             <Typography sx={{ marginBottom: 1 }}>
-              Date: {moment(props.obj.start_time).format("YYYY/MM/DD")}
+              Date:{" "}
+              {moment.tz(props.obj.startTime, timezone).format("YYYY/MM/DD")}
             </Typography>
             <Typography sx={{ marginBottom: 1 }}>
-              Time: {moment(props.obj.start_time).format("HH:MM")} ~{" "}
-              {moment(props.obj.end_time).format("HH:MM")}
+              Time: {moment.tz(props.obj.startTime, timezone).format("HH:mm")} ~{" "}
+              {moment.tz(props.obj.endTime, timezone).format("HH:mm")}
             </Typography>
           </Box>
-          <Tabs>
-            <List />
-          </Tabs>
+          <Tabs obj={props.obj.members} />
           <Box
             sx={{
               display: "flex",

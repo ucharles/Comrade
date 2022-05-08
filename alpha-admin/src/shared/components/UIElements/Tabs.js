@@ -3,6 +3,7 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
+import List from "./List";
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -47,19 +48,28 @@ export default function BasicTabs(props) {
           onChange={handleChange}
           aria-label="basic tabs example"
           variant="fullWidth">
-          <Tab label="Match: x" {...a11yProps(0)} />
-          <Tab label="Unmatch: x" {...a11yProps(1)} />
-          <Tab label="No event: x" {...a11yProps(2)} />
+          <Tab
+            label={`Match: ${props.obj.intersection.length}`}
+            {...a11yProps(0)}
+          />
+          <Tab
+            label={`Unmatch: ${props.obj.noIntersection.length}`}
+            {...a11yProps(1)}
+          />
+          <Tab
+            label={`No event: ${props.obj.noEvent.length}`}
+            {...a11yProps(2)}
+          />
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>
-        {props.children}
+        <List obj={props.obj.intersection} />
       </TabPanel>
       <TabPanel value={value} index={1}>
-        {props.children}
+        <List obj={props.obj.noIntersection} />
       </TabPanel>
       <TabPanel value={value} index={2}>
-        {props.children}
+        <List obj={props.obj.noEvent} />
       </TabPanel>
     </Box>
   );
