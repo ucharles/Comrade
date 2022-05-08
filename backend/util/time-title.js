@@ -14,7 +14,7 @@ module.exports.timeTitle = (startTime, endTime, timezone, mini) => {
   min === 0 ? null : (timeAmount += `${min}m`);
 
   if (mini === true) {
-    return `${start.format("HHmm")}(${timeAmount})`;
+    return `${start.format("HHmm")}/${timeAmount}`;
   } else {
     return `${start.format("HH:mm")}~${end.format("HH:mm")} (${timeAmount})`;
   }
