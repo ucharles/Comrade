@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 const eventSchema = new Schema(
   {
     title: { type: String },
+    miniTitle: { type: String },
     startTime: {
       type: Date,
       required: true,

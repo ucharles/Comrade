@@ -1,6 +1,6 @@
 const moment = require("moment-timezone");
 
-module.exports.timeTitle = (startTime, endTime, timezone) => {
+module.exports.timeTitle = (startTime, endTime, timezone, mini) => {
   let start = moment.tz(startTime, timezone);
   let end = moment.tz(endTime, timezone);
   let diff = end.diff(start) / 1000 / 60;
@@ -13,5 +13,9 @@ module.exports.timeTitle = (startTime, endTime, timezone) => {
   hour * min === 0 ? null : (timeAmount += " ");
   min === 0 ? null : (timeAmount += `${min}m`);
 
-  return `${start.format("HH:mm")}~${end.format("HH:mm")} (${timeAmount})`;
+  if (mini === true) {
+    return `${start.format("HHmm")}(${timeAmount})`;
+  } else {
+    return `${start.format("HH:mm")}~${end.format("HH:mm")} (${timeAmount})`;
+  }
 };
