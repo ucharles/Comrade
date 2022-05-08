@@ -1,5 +1,13 @@
 @media screen and (max-width: 767px) {
   .fc-toolbar.fc-header-toolbar {
-    font-size: 60%;
+    font-size: 85%;
+  }
+  .fc-event-title {
+    font-size: 75%;
+  }
+}
+@media screen and (max-width: 600px) {
+  .fc-daygrid-event-dot {
+    display: none;
   }
 }

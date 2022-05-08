@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { Title, useAuthState, Loading } from "react-admin";
+import { Cookies } from "react-cookie";
 
-import moment from "moment";
+import moment from "moment-timezone";
 import FullCalendar from "@fullcalendar/react"; // must go before plugins
 import dayGridPlugin from "@fullcalendar/daygrid"; // a plugin!
 import interactionPlugin from "@fullcalendar/interaction"; // needed for dayClick
@@ -14,8 +15,11 @@ import { makeStyles } from "@mui/styles";
 import IconButton from "@mui/material/IconButton";
 import AddIcon from "@mui/icons-material/Add";
 import EditIcon from "@mui/icons-material/Edit";
+import axios from "axios";
 
+import { stringAvatar } from "../shared/util/stringToAvatar";
 import { AddMemberModal, EditMemberModal } from "./MemberModals";
+import { useMediaQuery } from "@mui/material";
 import "./Dashboard.css";
 
 const useStyles = makeStyles((theme) => ({
@@ -39,15 +43,46 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const cookies = new Cookies();
+
 export const Dashboard = () => {
   const { isLoading, authenticated } = useAuthState();
+  const [EVENTS, setEvents] = useState([]);
+  const [calendar, setCalendar] = useState({});
+  const [inviteInfo, setInviteInfo] = useState({});
+  const matches = useMediaQuery("(max-width:767px)");
 
   const classes = useStyles();
   const navigate = useNavigate();
   const inputDate = useParams().date;
+  const calendarId = useParams().cid;
   const fullCalendarRef = useRef();
+  const timezone = decodeURIComponent(cookies.get("tz"));
 
-  let path = "/calendar/1/date/";
+  useEffect(() => {
+    const fetchCalendarInfo = async () => {
+      try {
+        const response = await axios(
+          `${process.env.REACT_APP_BACKEND_URL}/calendar/${calendarId}`,
+          {
+            withCredentials: true,
+          }
+        );
+        if (response.status === 200) {
+          let calendarInfo = {};
+          calendarInfo.name = response.data.calendar.name;
+          calendarInfo.description = response.data.calendar.description;
+          calendarInfo.members = response.data.calendar.members;
+          calendarInfo.memberCount = response.data.calendar.members.length;
+          setCalendar(calendarInfo);
+          console.log("fetch calendar complete");
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    };
+    fetchCalendarInfo();
+  }, [calendarId]);
 
   useEffect(() => {
     if (!isLoading && authenticated) {
@@ -69,10 +104,84 @@ export const Dashboard = () => {
     }
   }, [authenticated, inputDate, isLoading]);
 
+  useEffect(() => {
+    console.log("EVENT array:");
+    console.log(EVENTS);
+    const fetchEventsInFullCalendar = async () => {
+      if (!isLoading && authenticated) {
+        const calendarApi = fullCalendarRef.current.getApi();
+
+        const start = moment(calendarApi.view.activeStart).format("YYYY-MM-DD");
+        const end = moment(calendarApi.view.activeEnd).format("YYYY-MM-DD");
+        try {
+          const fetchInterMonthRes = await axios(
+            `${process.env.REACT_APP_BACKEND_URL}/events/calendar/${calendarId}/int-month/${start}~${end}`,
+            {
+              withCredentials: true,
+            }
+          );
+          const fetchMonthRes = await axios(
+            `${process.env.REACT_APP_BACKEND_URL}/events/calendar/${calendarId}/one-user-month/${start}~${end}`,
+            {
+              withCredentials: true,
+            }
+          );
+
+          if (fetchMonthRes.status === 200) {
+            if (fetchMonthRes.data.events.length !== 0) {
+              for (let event of fetchMonthRes.data.events) {
+                event.id = event._id;
+                event.start = event.startTime;
+                event.end = event.endTime;
+                event.resourceId = 1;
+                if (matches) {
+                  event.title = event.miniTitle;
+                }
+              }
+              console.log("events: ");
+              console.log(fetchMonthRes.data.events);
+              setEvents([...fetchMonthRes.data.events]);
+            }
+          }
+
+          if (fetchInterMonthRes.status === 200) {
+            if (fetchInterMonthRes.data.events !== undefined) {
+              for (let event of fetchInterMonthRes.data.events) {
+                event.id = event._id;
+                event.start = event.startTime;
+                event.end = event.endTime;
+                event.resourceId = 0;
+                if (matches) {
+                  event.title = event.miniTitle;
+                }
+              }
+              console.log("Intersection: ");
+              console.log(fetchInterMonthRes.data.events);
+              setEvents([
+                ...fetchMonthRes.data.events,
+                ...fetchInterMonthRes.data.events,
+              ]);
+            }
+          }
+        } catch (err) {
+          console.log(err);
+        }
+        console.log("Fetching items API End");
+      }
+    };
+    fetchEventsInFullCalendar();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoading, authenticated, calendarId, inputDate, matches]);
+
+  console.log("Setted EVENTS");
+  console.log(EVENTS);
+
+  let path = `/calendar/${calendarId}/date/`;
+
   const navigateToday = () => {
     const calendarApi = fullCalendarRef.current.getApi();
     calendarApi.today();
-    navigate("/calendar/1");
+    navigate(`/calendar/${calendarId}`);
   };
 
   const navigatePrevMonth = () => {
@@ -87,19 +196,32 @@ export const Dashboard = () => {
     navigate(path + moment(currentDate).add(1, "months").format("YYYY-MM"));
   };
 
-  const EVENTS = [
-    {
-      id: 1,
-      title: "event 2",
-      start: "2022-01-01T12:30:00Z",
-      end: "2022-01-01T14:00:00Z",
-      resourceId: 1,
-    },
-  ];
+  const fetchInviteLink = async () => {
+    try {
+      const response = await axios({
+        url: `${process.env.REACT_APP_BACKEND_URL}/invite`,
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+        withCredentials: true,
+        data: {
+          calendarId,
+        },
+      });
+
+      if (response.status === 201) {
+        setInviteInfo(response.data);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
 
   // 멤버 추가 모달 State
   const [addMemberOpen, setAddMemberOpen] = useState(false);
-  const addMemberModalOpen = () => setAddMemberOpen(true);
+  const addMemberModalOpen = () => {
+    setAddMemberOpen(true);
+    fetchInviteLink();
+  };
   const addMemberModalClose = () => setAddMemberOpen(false);
 
   // 멤버 관리 모달 State
@@ -108,15 +230,23 @@ export const Dashboard = () => {
   const editMemberModalClose = () => setEditMemberOpen(false);
 
   const dateClickHandler = (arg) => {
-    let path = `/calendar/1/event/${arg.dateStr}`;
+    let path = `/calendar/${calendarId}/event/${arg.dateStr}`;
     navigate(path);
-    // return <AddEvent dateStr={arg.dateStr} />;
+  };
+
+  const eventClickHandler = (arg) => {
+    let path = `/calendar/${calendarId}/event/${moment(arg.event.start).format(
+      "YYYY-MM-DD"
+    )}`;
+    navigate(path);
   };
 
   if (isLoading) {
     return <Loading />;
   }
   if (authenticated) {
+    console.log("dashboard rendering");
+    console.log(calendar);
     return (
       <React.Fragment>
         <Grid container spacing={1} sx={{ width: "auto" }}>
@@ -126,22 +256,22 @@ export const Dashboard = () => {
               <Box sx={{ display: "flex", mb: 1 }}>
                 <Box>
                   <Typography variant="h4" component="h2">
-                    Calendar Title
+                    {calendar.name}
                   </Typography>
                   <Typography variant="h6" component="h3">
-                    Subtitle
+                    {calendar.description}
                   </Typography>
                 </Box>
                 <Box className={classes.buttonBox}>
                   <IconButton
                     className={classes.button}
-                    href="#/calendar/1/edit"
+                    href={`/calendar/${calendarId}/edit`}
                     variant="contained">
                     <EditIcon />
                   </IconButton>
                   <IconButton
                     className={classes.button}
-                    href="#/calendar/1/event"
+                    href={`/calendar/${calendarId}/event`}
                     variant="contained">
                     <AddIcon />
                   </IconButton>
@@ -172,9 +302,11 @@ export const Dashboard = () => {
                   }}
                   timeZone="local"
                   dateClick={dateClickHandler}
+                  eventClick={eventClickHandler}
                   plugins={[dayGridPlugin, interactionPlugin, momentPlugin]}
                   events={EVENTS}
                   height="100%"
+                  displayEventTime={false}
                 />
               </Box>
             </Paper>
@@ -186,7 +318,7 @@ export const Dashboard = () => {
                   variant="h6"
                   component="h2"
                   sx={{ ml: 0.5, mt: 0.4 }}>
-                  Members (n)
+                  {`Members (${calendar.memberCount})`}
                 </Typography>
                 <Box
                   sx={{
@@ -209,16 +341,34 @@ export const Dashboard = () => {
                   <AddMemberModal
                     open={addMemberOpen}
                     close={addMemberModalClose}
+                    link={`${process.env.REACT_APP_FRONTEND_URL}/join/${inviteInfo.inviteId}`}
+                    description={moment
+                      .tz(inviteInfo.expire, timezone)
+                      .format("YYYY/MM/DD HH:MM")}
                   />
                 </Box>
               </Box>
-              <Box sx={{ display: "flex" }}>
-                <Avatar sx={{ mt: 0.5, mr: 2 }}></Avatar>
-                <div>
-                  <div>Username</div>
-                  <div>Role</div>
-                </div>
-              </Box>
+              {calendar.members !== undefined
+                ? calendar.members.map((member, index) => (
+                    <Box sx={{ display: "flex", mb: 1 }} key={member._id}>
+                      {member.image ? (
+                        <Box sx={{ mt: 1, mr: 2 }}>
+                          <Avatar
+                            src={`${process.env.REACT_APP_ASSET_URL}/${member.image}`}
+                          />
+                        </Box>
+                      ) : (
+                        <Box sx={{ mt: 1, mr: 2 }}>
+                          <Avatar {...stringAvatar(member.nickname, 35, 35)} />
+                        </Box>
+                      )}
+                      <Box>
+                        <Typography>{member.nickname}</Typography>
+                        <Typography>{member.role}</Typography>
+                      </Box>
+                    </Box>
+                  ))
+                : null}
             </Paper>
           </Grid>
         </Grid>
