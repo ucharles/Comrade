@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Title, useAuthState, Loading } from "react-admin";
+import { Title, useAuthState, Loading, useRedirect } from "react-admin";
 
 import Alert from "@mui/material/Alert";
 import Avatar from "@mui/material/Avatar";
@@ -24,6 +24,7 @@ const Input = styled("input")({
 
 export default function CreateCalendar() {
   const { isLoading, authenticated } = useAuthState();
+  const redirect = useRedirect();
 
   const [file, setFile] = useState();
   const [previewUrl, setPreviewUrl] = useState();
@@ -36,7 +37,7 @@ export default function CreateCalendar() {
   const alertModalOpen = () => setAlertModalOpen(true);
   const alertModalClose = () => {
     setAlertModalOpen(false);
-    window.location.reload();
+    redirect(`${process.env.REACT_APP_FRONTEND_URL}/calendar/new`);
   };
   const [errorMessage, setErrorMessage] = useState("");
 

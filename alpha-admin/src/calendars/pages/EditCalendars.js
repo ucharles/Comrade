@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Title, useAuthState, Loading } from "react-admin";
+import { Title, useAuthState, Loading, useRedirect } from "react-admin";
 import {
   Card,
   Typography,
@@ -26,6 +26,7 @@ const EditCalendars = () => {
   const { isLoading, authenticated } = useAuthState();
   const [calendars, setCalendars] = useState([]);
   const [modalData, setModalData] = useState([]);
+  const redirect = useRedirect();
 
   // ConfirmModal State
   const [confirmModal, setConfirmModalOpen] = useState(false);
@@ -37,7 +38,7 @@ const EditCalendars = () => {
   const alertModalOpen = () => setAlertModalOpen(true);
   const alertModalClose = () => {
     setAlertModalOpen(false);
-    window.location.reload();
+    redirect(`${process.env.REACT_APP_FRONTEND_URL}/calendar/settings`);
   };
 
   const getCalendars = async () => {
@@ -51,7 +52,6 @@ const EditCalendars = () => {
   };
 
   useEffect(() => {
-    // console.log("in MyMenu");
     getCalendars();
   }, []);
 
