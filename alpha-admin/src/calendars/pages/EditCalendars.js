@@ -17,14 +17,14 @@ import {
 import FolderIcon from "@mui/icons-material/Folder";
 import axios from "axios";
 import { ConfirmModal, AlertModal } from "../../layout/Modals";
-
-const isCreator = (calendar) => {
-  return calendar.creator === calendar.member;
-};
+import { ChangeOwnerModal } from "../../layout/MemberModals";
 
 const EditCalendars = () => {
   const { isLoading, authenticated } = useAuthState();
   const [calendars, setCalendars] = useState([]);
+  const [memberInCalendarRows, setMemberInCalendarRows] = useState([]); // changeOwner 멤버리스트
+  const [selectionModel, setSeletionModel] = useState();
+  const [userId, setUserId] = useState();
   const [modalData, setModalData] = useState([]);
   const redirect = useRedirect();
 
@@ -41,6 +41,18 @@ const EditCalendars = () => {
     redirect(`${process.env.REACT_APP_FRONTEND_URL}/calendar/settings`);
   };
 
+  // ChangeOwnerModal State
+  const [changeOwnerModal, setChangeOwnerModalOpen] = useState(false);
+  const changeOwnerModalOpen = (event) => {
+    getMembersInCalendar(event);
+    setChangeOwnerModalOpen(true);
+  };
+  const changeOwnerModalClose = () => setChangeOwnerModalOpen(false);
+
+  const isCreator = (calendar) => {
+    return calendar.owner === userId;
+  };
+
   const getCalendars = async () => {
     const response = await axios(
       `${process.env.REACT_APP_BACKEND_URL}/calendar/`,
@@ -51,8 +63,16 @@ const EditCalendars = () => {
     setCalendars(await response.data.calendars);
   };
 
+  const getUser = async () => {
+    const response = await axios(`${process.env.REACT_APP_BACKEND_URL}/users`, {
+      withCredentials: true,
+    });
+    setUserId(() => response.data.user._id);
+  };
+
   useEffect(() => {
     getCalendars();
+    getUser();
   }, []);
 
   // confirmModal Open & confirm, alert Modal 데이터 설정.
@@ -63,7 +83,7 @@ const EditCalendars = () => {
     let message;
     let successMessage;
     let action;
-    if (mode === "leave") {
+    if (mode === "Leave") {
       message = "Are you sure you want to leave this calendar?";
       successMessage = "You leaved";
       action = leaveHandler;
@@ -86,15 +106,74 @@ const EditCalendars = () => {
   };
 
   // 탈퇴 -> 탈퇴 완료시 캘린더 삭제된 결과 표시 필요
-  const leaveHandler = (event) => {
-    alert("in leaveHandler");
-    console.log(event.target.value);
+  const leaveHandler = async (event) => {
+    event.preventDefault();
+    confirmModalClose();
+    try {
+      const response = await axios({
+        url: `${process.env.REACT_APP_BACKEND_URL}/calendar/${event.target.value}/itself`,
+        method: "delete",
+        withCredentials: true,
+      });
+      if (response.status === 201) {
+        alertModalOpen();
+      }
+    } catch (error) {
+      new Error(error);
+    }
+  };
+
+  const getMembersInCalendar = async (event) => {
+    event.preventDefault();
+    const seletedCalendar = JSON.parse(event.target.value).calendar;
+    let rows = [];
+    try {
+      const response = await axios({
+        url: `${process.env.REACT_APP_BACKEND_URL}/calendar/${seletedCalendar._id}`,
+        method: "get",
+        withCredentials: true,
+      });
+      if (response.status === 201) {
+        const members = response.data.calendar.members;
+        for (var num = 0; num < members.length; num++) {
+          if (seletedCalendar.owner !== members[num]._id) {
+            rows.push({
+              id: members[num]._id,
+              nickname: members[num].nickname,
+            });
+          }
+        }
+        setSeletionModel(() => seletedCalendar._id);
+        setMemberInCalendarRows(() => rows);
+      }
+    } catch (error) {
+      new Error(error);
+    }
   };
   // 임명 -> 임명 완료 시, 탈퇴버튼 활성화 표시 필요
-  const changeOwnerHandler = (event) => {
-    alert("in changeOwnerHanlder");
-    console.log(event);
+  const changeOwnerHandler = async (event) => {
+    event.preventDefault();
+    confirmModalClose();
+    try {
+      const response = await axios({
+        url: `${process.env.REACT_APP_BACKEND_URL}/calendar/owner`,
+        method: "patch",
+        headers: { "Content-Type": "application/json" },
+        withCredentials: true,
+        data: {
+          userId: event.target.value,
+          calendarId: selectionModel,
+        },
+      });
+
+      if (response.status === 200) {
+        alertModalOpen();
+      }
+    } catch (e) {
+      throw new Error();
+    }
   };
+
   // 삭제 -> 삭제완료시 캘린더 삭제된 결과 표시 필요
   const deleteHandler = async (event) => {
     event.preventDefault();
@@ -167,8 +246,10 @@ const EditCalendars = () => {
                         {isCreator(calendar) && (
                           <React.Fragment>
                             <Button
-                              onClick={changeOwnerHandler}
-                              value={calendar._id}
+                              onClick={changeOwnerModalOpen}
+                              value={JSON.stringify({
+                                calendar,
+                              })}
                               variant="outlined"
                               sx={{ mr: 1, width: 170 }}
                               name="ChangeOwner"
@@ -208,6 +289,12 @@ const EditCalendars = () => {
                   severity="success"
                   message="Success"
                   secondMessage={modalData.successMessage}
+                />
+                <ChangeOwnerModal
+                  open={changeOwnerModal}
+                  close={changeOwnerModalClose}
+                  rows={memberInCalendarRows}
+                  onChange={openConfirmModalHandler}
                 />
               </List>
             </Grid>

@@ -171,7 +171,6 @@ export default function UserSetting() {
     e.preventDefault();
     const formData = new FormData(e.currentTarget);
     formData.append("image", file);
-    console.log(typeof formData.get("image"));
     try {
       const response = await axios(
         `${process.env.REACT_APP_BACKEND_URL}/users`,
